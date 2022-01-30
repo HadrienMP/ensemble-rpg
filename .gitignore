@@ -1,0 +1,5 @@
+elm-stuff
+.elm-spa
+node_modules
+*.swp
+public/dist/elm.js
