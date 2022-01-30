@@ -7,7 +7,7 @@ let publicDirPath = path.join(__dirname + "/../", 'public');
 app.use(express.static(publicDirPath));
 app.get('/', (req, res) => {
     res.sendFile(path.join(publicDirPath, "index.html"))
-}).get('/role/*', (req, res) => {
+}).get(/^\/role.*/, (req, res) => {
     res.sendFile(path.join(publicDirPath, "index.html"))
 })
 
