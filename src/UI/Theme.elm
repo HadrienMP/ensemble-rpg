@@ -18,7 +18,7 @@ container children =
         , Font.color Color.Dracula.white
         , Font.size 14
         , width fill
-        , paddingEach { top = 44, left = 0, right = 0, bottom = 40 }
+        , paddingEach { top = 44, left = 0, right = 0, bottom = 60 }
         ]
     <|
         el [ padding 10, centerX ] children

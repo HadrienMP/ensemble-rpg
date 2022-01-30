@@ -82,10 +82,11 @@ fromRole role =
             , level = Level1
             , icon = UI.BadgeIcon.driver
             , behaviours =
-                [ "Demandez des idées"
-                , "Filtrez la sagesse du mob pour dicter exactement quoi taper au pilote"
-                , "Donnez uniquement votre intention au pilote en le laissant gérer les détails d'implémentation"
-                , "Créez un test rouge, le faites passer et refactorez"
+                [ "Ask a clarifying question about what to type"
+                , "Type something you disagree with"
+                , "Use a new keyboard shortcut"
+                , "Learn something new about tooling"
+                , "Ignore a direct instruction from someone who isn't the Navigator"
                 ]
             , shortDescription = "The tools expert"
             , longDescription = "The quiet professional, you bring the mob quicky through the cycle : red, green, refactor."
@@ -98,7 +99,12 @@ fromRole role =
             , xpToComplete = Three
             , level = Level1
             , icon = UI.BadgeIcon.navigator
-            , behaviours = []
+            , behaviours =
+                [ "Ask for ideas"
+                , "filter the mob's idea then tell the driver exactly what to type"
+                , "tell the driver only you high-level intent and have them implement the details"
+                , "create a failing test, make it pass then refactor"
+                ]
             , shortDescription = "Brick by brick, you build in the darkness"
             , longDescription = "Every step you take brings you closer, as you sift the wisdow of the mob"
             }
@@ -110,9 +116,14 @@ fromRole role =
             , xpToComplete = Three
             , level = Level1
             , icon = UI.BadgeIcon.mobber
-            , behaviours = []
-            , shortDescription = "The tools expert"
-            , longDescription = "Un professionnel silencieux, vous amenez le mob rapidement au travers les étapes : red, green et refactor."
+            , behaviours =
+                [ "Yield to the less priviledged voice"
+                , "Contribute an idea"
+                , "Ask questions until you understand"
+                , "Listen on the edge of your seat"
+                ]
+            , shortDescription = "Shoulder to shoulder with the best"
+            , longDescription = "Your relaxed manner belies what you know to be true: nothing can stop this mob from shipping"
             }
 
         Researcher ->
@@ -122,9 +133,11 @@ fromRole role =
             , xpToComplete = Three
             , level = Level2
             , icon = UI.BadgeIcon.researcher
-            , behaviours = []
-            , shortDescription = "The tools expert"
-            , longDescription = "Un professionnel silencieux, vous amenez le mob rapidement au travers les étapes : red, green et refactor."
+            , behaviours =
+                [ "Find and share relevant information from documentation/blog/forum etc."
+                ]
+            , shortDescription = "You track the footsteps of thos who have gone before"
+            , longDescription = "Wandering the ailses of an infinite digital library"
             }
 
         Sponsor ->
@@ -134,9 +147,13 @@ fromRole role =
             , xpToComplete = Three
             , level = Level2
             , icon = UI.BadgeIcon.sponsor
-            , behaviours = []
-            , shortDescription = "The tools expert"
-            , longDescription = "Un professionnel silencieux, vous amenez le mob rapidement au travers les étapes : red, green et refactor."
+            , behaviours =
+                [ "Amplify the unheard voice"
+                , "Pick the mobber with the least priviledge and support their contributions"
+                , "Celebrate moments of excellence"
+                ]
+            , shortDescription = "Always seek the diamond in the rough"
+            , longDescription = "Knowing that innovation by definition comes from our blindspots, you fan the flames of unlooked-for greatness in others"
             }
 
         RearAdmiral ->
@@ -146,9 +163,13 @@ fromRole role =
             , xpToComplete = Three
             , level = Level2
             , icon = UI.BadgeIcon.rearAdmiral
-            , behaviours = []
-            , shortDescription = "The tools expert"
-            , longDescription = "Un professionnel silencieux, vous amenez le mob rapidement au travers les étapes : red, green et refactor."
+            , behaviours =
+                [ "Quietly speak into the navigators ear"
+                , "Give the smallest cue necessary to move the navigator forward"
+                , "Navigate the navigator at the highest level of abstraction they can understand"
+                ]
+            , shortDescription = "At the gates of teeth, you will meet terrible dangers. Here is how you will slip by them"
+            , longDescription = "From your darkened corner, you whisper your battle-hardened wisdom, gently advising the captain of this merry band, as they grasp their own chance for glory"
             }
 
         Automationist ->
@@ -158,9 +179,14 @@ fromRole role =
             , xpToComplete = Three
             , level = Level3
             , icon = UI.BadgeIcon.automationist
-            , behaviours = []
-            , shortDescription = "The tools expert"
-            , longDescription = "Un professionnel silencieux, vous amenez le mob rapidement au travers les étapes : red, green et refactor."
+            , behaviours =
+                [ "Point out a repeated task in a tool"
+                , "Point our a repeated aspect of team process"
+                , "Point out possible boiler plate code"
+                , "Propose an automation for a repeated task"
+                ]
+            , shortDescription = "Witness the power of my android army"
+            , longDescription = "Relentlessly expanding the power of what a single mind can do, you create countless robot hands that make drudgery a mere memory"
             }
 
         Nose ->
@@ -170,9 +196,15 @@ fromRole role =
             , xpToComplete = Three
             , level = Level3
             , icon = UI.BadgeIcon.nose
-            , behaviours = []
-            , shortDescription = "The tools expert"
-            , longDescription = "Un professionnel silencieux, vous amenez le mob rapidement au travers les étapes : red, green et refactor."
+            , behaviours =
+                [ "Point out a long line of code"
+                , "Point out a complex conditional"
+                , "Point out duplication"
+                , "Point out an unnamed variable or method"
+                , "Propose an action for deodorizing the code"
+                ]
+            , shortDescription = "Something's rotten in Denmark"
+            , longDescription = "With the sensibilities of a technical sommelier, you sniff out the smelly and malodorous elements in the code. Nothing escapes the Nose!"
             }
 
         Archivist ->
@@ -182,9 +214,13 @@ fromRole role =
             , xpToComplete = Three
             , level = Level3
             , icon = UI.BadgeIcon.archivist
-            , behaviours = []
-            , shortDescription = "The tools expert"
-            , longDescription = "Un professionnel silencieux, vous amenez le mob rapidement au travers les étapes : red, green et refactor."
+            , behaviours =
+                [ "Record solution alternatives in a big whiteboard"
+                , "Express an idea as it is taking shape in a big whiteboard"
+                , "Articulate the current task at hand and make it visible to the entire mob"
+                ]
+            , shortDescription = "Whitout writing, who will remember us?"
+            , longDescription = "In constant battle with the winds of time that erase and obscure, you write, illustrate, and illuminate the great deeds and discoveries of your hardy band."
             }
 
         TrafficCop ->
@@ -194,9 +230,14 @@ fromRole role =
             , xpToComplete = Three
             , level = Level4
             , icon = UI.BadgeIcon.trafficCop
-            , behaviours = []
-            , shortDescription = "The tools expert"
-            , longDescription = "Un professionnel silencieux, vous amenez le mob rapidement au travers les étapes : red, green et refactor."
+            , behaviours =
+                [ "Suggest a relevant new process or working agreement"
+                , "Point out when the team violates a process or working agreement"
+                , "Articulate the current task at hand an make it visible to the entire mob"
+                , "Capture design decisions and other technical details for the team"
+                ]
+            , shortDescription = "Follow the rules of the road. It will save your life"
+            , longDescription = "You know how even the great can make foolish mistakes when fatigued. So your experienced eyes are always on how we get there not where we're going"
             }
 
 
