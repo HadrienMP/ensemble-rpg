@@ -1,8 +1,10 @@
 module Pages.Role.Id_ exposing (Model, Msg, page)
 
 import Color.Dracula
+import Core.Player as Player
 import Core.Role
 import Core.Role.Card.RoleCard as RoleCard exposing (Behaviour, RoleCard)
+import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -13,14 +15,14 @@ import Gen.Route
 import Page
 import Request
 import Shared
-import UI.Theme as Theme exposing (emptySides, h2)
+import UI.Theme as Theme exposing (h2)
 import View exposing (View)
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
-page _ req =
-    Page.element
-        { init = init req
+page shared req =
+    Page.advanced
+        { init = init shared req
         , update = update
         , view = view
         , subscriptions = subscriptions
@@ -38,7 +40,9 @@ type Msg
 
 
 type alias Model =
-    { role : RoleCard Msg }
+    { card : RoleCard Msg
+    , xp : Int
+    }
 
 
 
@@ -47,17 +51,17 @@ type alias Model =
 -- ###########################################
 
 
-init : Request.With Params -> ( Model, Cmd Msg )
-init req =
+init : Shared.Model -> Request.With Params -> ( Model, Effect Msg )
+init shared req =
     case RoleCard.findById req.params.id of
         Just card ->
-            ( { role = card }
-            , Cmd.none
+            ( { card = card, xp = Player.xpOf card.role shared.player }
+            , Effect.none
             )
 
         Nothing ->
-            ( { role = RoleCard.fromRole Core.Role.Mobber }
-            , Request.replaceRoute Gen.Route.NotFound req
+            ( { card = RoleCard.fromRole Core.Role.Mobber, xp = 0 }
+            , Effect.fromCmd <| Request.replaceRoute Gen.Route.NotFound req
             )
 
 
@@ -67,9 +71,18 @@ init req =
 -- ###########################################
 
 
-update : Msg -> model -> ( model, Cmd Msg )
-update _ model =
-    ( model, Cmd.none )
+update : Msg -> Model -> ( Model, Effect Msg )
+update msg model =
+    case msg of
+        GainXp ->
+            let
+                newXp =
+                    RoleCard.incXp model.xp model.card
+            in
+            
+            ( { model | xp = newXp }
+            , Effect.fromShared <| Shared.XpChanged newXp model.card.role
+            )
 
 
 
@@ -79,23 +92,23 @@ update _ model =
 
 
 view : Model -> View Msg
-view { role } =
-    { title = role.label
+view model =
+    { title = model.card.label
     , body =
         Theme.container <|
-            column [ spacing 40 ]
+            column [ spacing 40, width fill ]
                 [ row
                     [ spacingXY 20 0 ]
-                    [ el [ width shrink ] <| RoleCard.cardView role
-                    , displayDescription role
+                    [ el [ width shrink ] <| RoleCard.cardView model.card
+                    , displayDescription model.card
                     ]
                 , column [ width fill ]
                     [ h2 [] <| text "Gain XP"
-                    , displayBehaviours role
+                    , displayBehaviours model.card
                     ]
                 , row [ spacingXY 20 0, width fill ]
                     [ h2 [ padding 0 ] <| text "XP"
-                    , displayXpSlots role
+                    , RoleCard.displayXpSlots model.xp model.card
                     ]
                 ]
     }
@@ -142,53 +155,6 @@ displayBehaviour behaviour =
                 , paragraph [ Font.justify ] [ text behaviour ]
                 ]
         }
-
-
-
--- XP slots
-
-
-displayXpSlots : RoleCard Msg -> Element Msg
-displayXpSlots role =
-    el
-        [ width fill
-        , Border.solid
-        , Border.width 1
-        , Border.color Color.Dracula.gray
-        , padding 6
-        , behindContent <| displayXp 1 role.xpToComplete
-        , clipY
-        ]
-    <|
-        el [ centerX ] <|
-            text <|
-                String.fromInt 1
-                    ++ "/"
-                    ++ (role.xpToComplete |> RoleCard.xpToCompleteAsInt |> String.fromInt)
-
-
-displayXp : Int -> RoleCard.XpToComplete -> Element Msg
-displayXp current max =
-    RoleCard.xpToCompleteAsInt max
-        |> List.range 1
-        |> List.map
-            (\xp ->
-                if xp <= current then
-                    [ Background.color Color.Dracula.green
-                    , Border.shadow
-                        { offset = ( 0, 0 )
-                        , blur = 6
-                        , size = 3 
-                        , color = Color.Dracula.green
-                        }
-                    ]
-
-                else
-                    []
-            )
-        |> List.map (\attr -> el (attr ++ [ width fill, height (px 25) ]) none)
-        |> row [ width fill ]
-
 
 
 -- ###########################################

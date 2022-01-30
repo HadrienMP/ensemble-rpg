@@ -4,7 +4,6 @@ import AssocList exposing (Dict)
 import AssocList.Extra
 import Color.Dracula
 import Core.Level exposing (..)
-import Core.Player exposing (Xp)
 import Core.Role exposing (..)
 import Element exposing (..)
 import Element.Background as Background
@@ -13,27 +12,15 @@ import Element.Font as Font
 import Gen.Route as Route exposing (Route(..))
 import List
 import UI.BadgeIcon exposing (..)
-import UI.Theme exposing (emptySides)
+import UI.Theme
 
 
 
 -- Types
 
 
-type XpToComplete
-    = Three
-    | Four
-
-
-xpToCompleteAsInt : XpToComplete -> Int
-xpToCompleteAsInt xp =
-    case xp of
-        Three ->
-            3
-
-        Four ->
-            4
-
+type alias XpToComplete
+    = Int
 
 type alias Behaviour =
     String
@@ -54,6 +41,11 @@ type alias RoleCard msg =
     , longDescription : String
     , shortDescription : String
     }
+
+
+incXp : Int -> RoleCard msg -> Int
+incXp xp card =
+    min (xp + 1) card.xpToComplete
 
 
 
@@ -78,7 +70,7 @@ fromRole role =
             { role = Driver
             , id = "driver"
             , label = "Driver"
-            , xpToComplete = Three
+            , xpToComplete = 3
             , level = Level1
             , icon = UI.BadgeIcon.driver
             , behaviours =
@@ -96,7 +88,7 @@ fromRole role =
             { role = Navigator
             , id = "navigator"
             , label = "Navigator"
-            , xpToComplete = Three
+            , xpToComplete = 3
             , level = Level1
             , icon = UI.BadgeIcon.navigator
             , behaviours =
@@ -113,7 +105,7 @@ fromRole role =
             { role = Mobber
             , id = "mobber"
             , label = "Mobber"
-            , xpToComplete = Three
+            , xpToComplete = 3
             , level = Level1
             , icon = UI.BadgeIcon.mobber
             , behaviours =
@@ -130,7 +122,7 @@ fromRole role =
             { role = Researcher
             , id = "researcher"
             , label = "Researcher"
-            , xpToComplete = Three
+            , xpToComplete = 4
             , level = Level2
             , icon = UI.BadgeIcon.researcher
             , behaviours =
@@ -144,7 +136,7 @@ fromRole role =
             { role = Sponsor
             , id = "sponsor"
             , label = "Sponsor"
-            , xpToComplete = Three
+            , xpToComplete = 4
             , level = Level2
             , icon = UI.BadgeIcon.sponsor
             , behaviours =
@@ -160,7 +152,7 @@ fromRole role =
             { role = RearAdmiral
             , id = "rear-admiral"
             , label = "Rear Admiral"
-            , xpToComplete = Three
+            , xpToComplete = 4
             , level = Level2
             , icon = UI.BadgeIcon.rearAdmiral
             , behaviours =
@@ -176,7 +168,7 @@ fromRole role =
             { role = Automationist
             , id = "automationist"
             , label = "Automationist"
-            , xpToComplete = Three
+            , xpToComplete = 4
             , level = Level3
             , icon = UI.BadgeIcon.automationist
             , behaviours =
@@ -193,7 +185,7 @@ fromRole role =
             { role = Nose
             , id = "nose"
             , label = "Nose"
-            , xpToComplete = Three
+            , xpToComplete = 4
             , level = Level3
             , icon = UI.BadgeIcon.nose
             , behaviours =
@@ -211,7 +203,7 @@ fromRole role =
             { role = Archivist
             , id = "archivist"
             , label = "Archivist"
-            , xpToComplete = Three
+            , xpToComplete = 4
             , level = Level3
             , icon = UI.BadgeIcon.archivist
             , behaviours =
@@ -227,7 +219,7 @@ fromRole role =
             { role = TrafficCop
             , id = "traffic-cop"
             , label = "Traffic Cop"
-            , xpToComplete = Three
+            , xpToComplete = 4
             , level = Level4
             , icon = UI.BadgeIcon.trafficCop
             , behaviours =
@@ -268,7 +260,7 @@ cardView role =
                 |> (*) 1.4
                 |> round
     in
-    Element.link
+    column
         [ Border.rounded 5
         , Border.solid
         , Border.width 2
@@ -276,27 +268,25 @@ cardView role =
         , Background.color <| UI.Theme.darken 4 <| colorOf role.level
         , height <| px cardHeight
         , width <| minimum cardWidth fill
+        , spaceEvenly
+        , paddingXY 0 20
         ]
-        { url = Route.Role__Id_ { id = role.id } |> Route.toHref
-        , label =
-            column [ spacingXY 0 5, width fill ]
-                [ el [ width <| px 100, centerX, paddingXY 15 0 ] role.icon
-                , el
-                    [ centerX
-                    , Font.bold
-                    , Font.size 14
-                    , paddingXY 0 5
-                    , Font.shadow { offset = ( 2, 2 ), blur = 2, color = Color.Dracula.gray }
-                    ]
-                    (text role.label)
-                , el
-                    [ centerX
-                    , Font.size 12
-                    , Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
-                    ]
-                    (text <| "Level " ++ Core.Level.toString role.level)
-                ]
-        }
+        [ el [ width <| px 100, centerX, paddingXY 15 0 ] role.icon
+        , el
+            [ centerX
+            , Font.bold
+            , Font.size 14
+            , paddingXY 0 5
+            , Font.shadow { offset = ( 2, 2 ), blur = 2, color = Color.Dracula.gray }
+            ]
+            (text role.label)
+        , el
+            [ centerX
+            , Font.size 12
+            , Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
+            ]
+            (text <| "Level " ++ Core.Level.toString role.level)
+        ]
 
 
 colorOf : Level -> Color
@@ -313,3 +303,45 @@ colorOf level =
 
         Level4 ->
             Color.Dracula.red
+
+
+displayXpSlots : Int -> RoleCard msg -> Element msg
+displayXpSlots xp card =
+    el
+        [ width fill
+        , Border.solid
+        , Border.width 1
+        , Border.color Color.Dracula.gray
+        , padding 6
+        , behindContent <| displayXp xp card.xpToComplete
+        , clipY
+        ]
+    <|
+        el [ centerX ] <|
+            text <|
+                String.fromInt xp
+                    ++ "/"
+                    ++ (String.fromInt card.xpToComplete)
+
+
+displayXp : Int -> XpToComplete -> Element msg
+displayXp current max =
+    max
+        |> List.range 1
+        |> List.map
+            (\xp ->
+                if xp <= current then
+                    [ Background.color Color.Dracula.green
+                    , Border.shadow
+                        { offset = ( 0, 0 )
+                        , blur = 6
+                        , size = 3
+                        , color = Color.Dracula.green
+                        }
+                    ]
+
+                else
+                    []
+            )
+        |> List.map (\attr -> el (attr ++ [ width fill, height (px 25) ]) none)
+        |> row [ width fill ]

@@ -33,6 +33,7 @@ container children =
             [ padding 10
             , width (fill |> maximum maxWidthBody)
             , centerX
+            , Region.mainContent
             ]
             children
 
@@ -59,11 +60,16 @@ navigation =
         , Background.color Color.Dracula.blue
         , width fill
         , Position.fixAt { emptyPosition | bottom = Just 0 }
-        , Border.shadow { offset = ( 0, 0 ), blur = 2, size = 2, color = Color.Dracula.black |> transparent 3 }
+        , Border.shadow
+            { offset = ( 0, 0 )
+            , blur = 2
+            , size = 2
+            , color = Color.Dracula.black |> transparent 3
+            }
         ]
     <|
         row [ width <| maximum maxWidthBody <| fill, centerX ]
-            [ navLink []
+            [ navLink [ Border.widthEach { emptySides | left = 1, right = 1 } ]
                 { route = Route.Home_, label = el [ width <| px 30, centerX ] comedyMasks }
             , navLink []
                 { route = Route.Team, label = el [ width <| px 30, centerX ] team }
