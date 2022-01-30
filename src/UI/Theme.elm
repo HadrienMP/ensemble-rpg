@@ -66,7 +66,7 @@ navigation =
             [ navLink []
                 { route = Route.Home_, label = el [ width <| px 30, centerX ] comedyMasks }
             , navLink []
-                { route = Route.Home_, label = el [ width <| px 30, centerX ] team }
+                { route = Route.Team, label = el [ width <| px 30, centerX ] team }
             ]
 
 
