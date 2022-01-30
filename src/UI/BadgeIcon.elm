@@ -1,4 +1,4 @@
-module BadgeIcon exposing (..)
+module UI.BadgeIcon exposing (..)
 
 import Color.Dracula
 import Element exposing (Color, Element, html)

@@ -1,7 +1,7 @@
-module Domain.Role exposing (..)
+module Core.Role exposing (..)
 
-import BadgeIcon exposing (..)
-import Domain.Level exposing (..)
+import UI.BadgeIcon exposing (..)
+import Core.Level exposing (..)
 
 
 type Role

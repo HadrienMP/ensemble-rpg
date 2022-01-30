@@ -1,15 +1,19 @@
 module Pages.Role.Id_ exposing (Model, Msg, page)
 
+import Color.Dracula
+import Core.Role
+import Core.Role.Card.RoleCard as RoleCard exposing (Behaviour, RoleCard)
 import Element exposing (..)
-import Element.Input
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Element.Input as Input
 import Gen.Params.Role.Id_ exposing (Params)
 import Gen.Route
 import Page
 import Request
-import Domain.Role
-import Domain.RoleCard exposing (Behaviour, RoleCard)
 import Shared
-import Theme
+import UI.Theme as Theme exposing (emptySides, h2)
 import View exposing (View)
 
 
@@ -24,7 +28,9 @@ page _ req =
 
 
 
+-- ###########################################
 -- Model
+-- ###########################################
 
 
 type Msg
@@ -32,29 +38,33 @@ type Msg
 
 
 type alias Model =
-    { card : RoleCard Msg }
+    { role : RoleCard Msg }
 
 
 
+-- ###########################################
 -- Init
+-- ###########################################
 
 
 init : Request.With Params -> ( Model, Cmd Msg )
 init req =
-    case Domain.RoleCard.findById req.params.id of
+    case RoleCard.findById req.params.id of
         Just card ->
-            ( { card = card }
+            ( { role = card }
             , Cmd.none
             )
 
         Nothing ->
-            ( { card = Domain.RoleCard.fromRole Domain.Role.Mobber }
-            , Request.pushRoute Gen.Route.NotFound req
+            ( { role = RoleCard.fromRole Core.Role.Mobber }
+            , Request.replaceRoute Gen.Route.NotFound req
             )
 
 
 
+-- ###########################################
 -- Update
+-- ###########################################
 
 
 update : Msg -> model -> ( model, Cmd Msg )
@@ -63,37 +73,127 @@ update _ model =
 
 
 
+-- ###########################################
 -- View
+-- ###########################################
 
 
 view : Model -> View Msg
-view { card } =
-    { title = card.label
-    , body = Theme.container [ fullView card ]
+view { role } =
+    { title = role.label
+    , body =
+        Theme.container <|
+            column [ spacing 40 ]
+                [ row
+                    [ spacingXY 20 0 ]
+                    [ el [ width shrink ] <| RoleCard.cardView role
+                    , displayDescription role
+                    ]
+                , column [ width fill ]
+                    [ h2 [] <| text "Gain XP"
+                    , displayBehaviours role
+                    ]
+                , row [ spacingXY 20 0, width fill ]
+                    [ h2 [ padding 0 ] <| text "XP"
+                    , displayXpSlots role
+                    ]
+                ]
     }
 
 
-fullView : RoleCard Msg -> Element Msg
-fullView role =
-    column
-        [ spacingXY 0 10, width fill ]
-        [ el [ width (px 50) ] role.icon
-        , text role.label
-        , column []
-            (List.map displayBehaviour role.behaviours)
+
+-- Description
+
+
+displayDescription : RoleCard Msg -> Element Msg
+displayDescription role =
+    column [ width fill ]
+        [ h2 [] <| paragraph [] [ text role.shortDescription ]
+        , paragraph [ Font.justify ] [ text role.longDescription ]
         ]
+
+
+
+-- Behaviour
+
+
+displayBehaviours : RoleCard Msg -> Element Msg
+displayBehaviours role =
+    column
+        [ width fill
+        , Background.color <| Theme.darken 4 <| RoleCard.colorOf role.level
+        ]
+        (List.map displayBehaviour role.behaviours)
 
 
 displayBehaviour : Behaviour -> Element Msg
 displayBehaviour behaviour =
-    Element.Input.button []
+    Input.button
+        [ Border.solid
+        , Border.color Color.Dracula.gray
+        , Border.width 1
+        , width fill
+        , padding 14
+        ]
         { onPress = Just GainXp
-        , label = text behaviour
+        , label =
+            row [ spacingXY 14 0 ]
+                [ paragraph [ width shrink ] [ text "+1" ]
+                , paragraph [ Font.justify ] [ text behaviour ]
+                ]
         }
 
 
 
+-- XP slots
+
+
+displayXpSlots : RoleCard Msg -> Element Msg
+displayXpSlots role =
+    el
+        [ width fill
+        , Border.solid
+        , Border.width 1
+        , Border.color Color.Dracula.gray
+        , padding 6
+        , behindContent <| displayXp 1 role.xpToComplete
+        , clipY
+        ]
+    <|
+        el [ centerX ] <|
+            text <|
+                String.fromInt 1
+                    ++ "/"
+                    ++ (role.xpToComplete |> RoleCard.xpToCompleteAsInt |> String.fromInt)
+
+
+displayXp : Int -> RoleCard.XpToComplete -> Element Msg
+displayXp current max =
+    RoleCard.xpToCompleteAsInt max
+        |> List.range 1
+        |> List.map
+            (\xp ->
+                if xp <= current then
+                    [ Background.color Color.Dracula.green
+                    , Border.shadow
+                        { offset = ( 0, 0 )
+                        , blur = 6
+                        , size = 6
+                        , color = Color.Dracula.green
+                        }
+                    ]
+
+                else
+                    []
+            )
+        |> List.map (\attr -> el (attr ++ [ width fill, height (px 20) ]) none)
+        |> row [ width fill ]
+
+
+
+-- ###########################################
 -- Subscriptions
+-- ###########################################
 
 
 subscriptions : Model -> Sub Msg

@@ -1,4 +1,4 @@
-module Domain.Level exposing (..)
+module Core.Level exposing (..)
 
 
 type Level

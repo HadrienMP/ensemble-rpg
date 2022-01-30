@@ -1,8 +1,13 @@
 module View exposing (View, map, none, placeholder, toBrowserDocument)
 
 import Browser
-import Element exposing (Element, layout)
-import Theme
+import Color.Dracula
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Element.Region as Region
+import UI.Theme
 
 
 type alias View msg =
@@ -14,7 +19,7 @@ type alias View msg =
 placeholder : String -> View msg
 placeholder str =
     { title = str
-    , body = Theme.container [ Element.text str ]
+    , body = UI.Theme.container <| Element.text str
     }
 
 
@@ -33,5 +38,7 @@ map fn view =
 toBrowserDocument : View msg -> Browser.Document msg
 toBrowserDocument view =
     { title = view.title
-    , body = [ layout [] view.body ]
+    , body =
+        [ layout [ Background.color Color.Dracula.black ] view.body
+        ]
     }

@@ -1,6 +1,6 @@
-module Domain.Player exposing (..)
+module Core.Player exposing (..)
 import Dict exposing (Dict)
-import Domain.Role exposing (Role)
+import Core.Role exposing (Role)
 
 
 type Xp
