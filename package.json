@@ -4,6 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+        "build": "elm-spa build",
+        "start": "node server/app.js",
         "dev": "elm-spa server",
         "test": "echo \"Error: no test specified\" && exit 1",
         "postinstall": "elm-tooling install"
@@ -13,5 +15,8 @@
     "devDependencies": {
         "elm-spa": "^6.0.4",
         "elm-tooling": "^1.7.0"
+    },
+    "dependencies": {
+        "express": "^4.17.2"
     }
 }
