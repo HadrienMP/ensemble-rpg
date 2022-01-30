@@ -6,9 +6,9 @@ const path = require('path');
 let publicDirPath = path.join(__dirname + "/../", 'public');
 app.use(express.static(publicDirPath));
 app.get('/', (req, res) => {
-    res.sendFile(join(publicDirPath, "index.html"))
+    res.sendFile(path.join(publicDirPath, "index.html"))
 }).get('/role/*', (req, res) => {
-    res.sendFile(join(publicDirPath, "index.html"))
+    res.sendFile(path.join(publicDirPath, "index.html"))
 })
 
 const port = process.env.PORT || 3000
