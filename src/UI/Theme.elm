@@ -7,7 +7,15 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
 import Gen.Route as Route
+import Html.Attributes exposing (attribute)
+import Svg exposing (desc)
+import UI.Icons exposing (comedyMasks, team)
 import UI.Position as Position exposing (emptyPosition)
+
+
+maxWidthBody : Int
+maxWidthBody =
+    800
 
 
 container : Element msg -> Element msg
@@ -23,7 +31,7 @@ container children =
     <|
         el
             [ padding 10
-            , width (fill |> maximum 800)
+            , width (fill |> maximum maxWidthBody)
             , centerX
             ]
             children
@@ -32,7 +40,7 @@ container children =
 header : Element msg
 header =
     el
-        [ paddingXY 20 20
+        [ paddingXY 20 16
         , Font.size 20
         , Font.color <| darken 4 <| Color.Dracula.white
         , Font.italic
@@ -46,21 +54,34 @@ header =
 
 navigation : Element msg
 navigation =
-    row
+    el
         [ Region.navigation
         , Background.color Color.Dracula.blue
         , width fill
         , Position.fixAt { emptyPosition | bottom = Just 0 }
         , Border.shadow { offset = ( 0, 0 ), blur = 2, size = 2, color = Color.Dracula.black |> transparent 3 }
         ]
-        [ link
-            [ Border.solid
-            , Border.color Color.Dracula.black
-            , Border.widthEach { emptySides | right = 1 }
-            , paddingXY 10 14
+    <|
+        row [ width <| maximum maxWidthBody <| fill, centerX ]
+            [ navLink []
+                { route = Route.Home_, label = el [ width <| px 30, centerX ] comedyMasks }
+            , navLink []
+                { route = Route.Home_, label = el [ width <| px 30, centerX ] team }
             ]
-            { url = Route.toHref Route.Home_, label = text "Roles" }
-        ]
+
+
+navLink : List (Attribute msg) -> { route : Route.Route, label : Element msg } -> Element msg
+navLink attributes description =
+    link
+        ([ Border.solid
+         , Border.color Color.Dracula.black
+         , Border.widthEach { emptySides | right = 1 }
+         , paddingXY 10 10
+         , width fill
+         ]
+            ++ attributes
+        )
+        { url = Route.toHref description.route, label = description.label }
 
 
 emptySides : { top : Int, left : Int, right : Int, bottom : Int }
@@ -68,12 +89,14 @@ emptySides =
     { top = 0, left = 0, right = 0, bottom = 0 }
 
 
-h1 : List (Attribute msg)
-h1 =
-    [ Region.heading 1
-    , Font.color Color.Dracula.white
-    , Font.size 20
-    ]
+h1 : List (Attribute msg) -> Element msg -> Element msg
+h1 attributes =
+    el <|
+        [ Region.heading 1
+        , Font.color Color.Dracula.white
+        , Font.size 20
+        ]
+            ++ attributes
 
 
 h2 : List (Attribute msg) -> Element msg -> Element msg
