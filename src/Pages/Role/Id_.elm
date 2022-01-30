@@ -178,7 +178,7 @@ displayXp current max =
                     , Border.shadow
                         { offset = ( 0, 0 )
                         , blur = 6
-                        , size = 6
+                        , size = 3 
                         , color = Color.Dracula.green
                         }
                     ]
@@ -186,7 +186,7 @@ displayXp current max =
                 else
                     []
             )
-        |> List.map (\attr -> el (attr ++ [ width fill, height (px 20) ]) none)
+        |> List.map (\attr -> el (attr ++ [ width fill, height (px 25) ]) none)
         |> row [ width fill ]
 
 

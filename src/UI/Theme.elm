@@ -21,7 +21,12 @@ container children =
         , paddingEach { top = 44, left = 0, right = 0, bottom = 60 }
         ]
     <|
-        el [ padding 10, centerX ] children
+        el
+            [ padding 10
+            , width (fill |> maximum 800)
+            , centerX
+            ]
+            children
 
 
 header : Element msg
