@@ -69,7 +69,7 @@ view : Model -> View Msg
 view model =
     { title = "Team"
     , body =
-        container <|
+        container [] <|
             column [ spacingXY 0 20 ]
                 [ column []
                     [ h2 [ paddingEach { emptySides | bottom = 10 } ] <| text model.player.name

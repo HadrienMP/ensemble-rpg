@@ -16,7 +16,7 @@ type alias View msg =
 placeholder : String -> View msg
 placeholder str =
     { title = str
-    , body = UI.Theme.container <| Element.text str
+    , body = UI.Theme.container [] <| Element.text str
     }
 
 

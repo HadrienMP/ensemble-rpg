@@ -95,7 +95,7 @@ view : Model -> View Msg
 view model =
     { title = model.card.label
     , body =
-        Theme.container <|
+        Theme.container [] <|
             column [ spacing 40, width fill ]
                 [ row
                     [ spacingXY 20 0 ]

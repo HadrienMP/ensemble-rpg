@@ -23,6 +23,7 @@ type alias Model =
 
 type Msg
     = XpChanged Int Role
+    | NameChanged String
 
 
 init : Request -> Flags -> ( Model, Cmd Msg )
@@ -35,6 +36,9 @@ update _ msg model =
     case msg of
         XpChanged xp role ->
             ( { model | player = Player.updateXp xp role model.player }, Cmd.none )
+
+        NameChanged name ->
+            ( { model | player = Player.updateName name model.player }, Cmd.none )
 
 
 subscriptions : Request -> Model -> Sub Msg

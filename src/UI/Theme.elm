@@ -16,24 +16,26 @@ maxWidthBody =
     800
 
 
-container : Element msg -> Element msg
-container children =
+container : List (Attribute msg) -> Element msg -> Element msg
+container attr children =
     el
-        [ inFront navigation
-        , behindContent header
-        , Font.color Color.Dracula.white
-        , Font.size 14
-        , width fill
-        , paddingEach { top = 44, left = 0, right = 0, bottom = 60 }
-        ]
-    <|
-        el
+        ([ inFront navigation
+         , behindContent header
+         , Font.color Color.Dracula.white
+         , Font.size 14
+         , width fill
+         , paddingEach { top = 44, left = 0, right = 0, bottom = 60 }
+         ]
+            ++ attr
+        )
+        (el
             [ padding 10
             , width <| maximum maxWidthBody fill
             , centerX
             , Region.mainContent
             ]
             children
+        )
 
 
 header : Element msg
@@ -68,13 +70,13 @@ navigation =
     <|
         row [ width <| maximum maxWidthBody <| fill, centerX ]
             [ navLink [ Border.widthEach { emptySides | left = 1, right = 1 } ]
-                { route = Route.Home_, label = el [ width <| px 30, centerX ] Icon.comedyMasks }
-            , navLink []
-                { route = Route.Team, label = el [ width <| px 30, centerX ] Icon.ribbon }
+                { route = Route.Home_, icon = Icon.comedyMasks }
+            , navLink [] { route = Route.Team, icon = Icon.ribbon }
+            , navLink [] { route = Route.User, icon = Icon.person }
             ]
 
 
-navLink : List (Attribute msg) -> { route : Route.Route, label : Element msg } -> Element msg
+navLink : List (Attribute msg) -> { route : Route.Route, icon : Element msg } -> Element msg
 navLink attributes description =
     link
         ([ Border.solid
@@ -85,7 +87,7 @@ navLink attributes description =
          ]
             ++ attributes
         )
-        { url = Route.toHref description.route, label = description.label }
+        { url = Route.toHref description.route, label = el [ width <| px 30, centerX ] description.icon }
 
 
 emptySides : { top : Int, left : Int, right : Int, bottom : Int }
@@ -97,8 +99,9 @@ h1 : List (Attribute msg) -> Element msg -> Element msg
 h1 attributes =
     el <|
         [ Region.heading 1
-        , Font.color Color.Dracula.white
-        , Font.size 20
+        , Font.color Color.Dracula.green
+        , Font.size 30
+        , paddingEach { emptySides | bottom = 20 }
         ]
             ++ attributes
 

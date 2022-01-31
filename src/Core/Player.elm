@@ -24,3 +24,7 @@ xpOf role player =
 updateXp : Int -> Role -> Player -> Player
 updateXp xp role player =
     { player | xp = Dict.insert role xp player.xp }
+
+updateName : String -> Player -> Player
+updateName name player =
+    { player | name = name }
