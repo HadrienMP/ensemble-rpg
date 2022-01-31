@@ -2,7 +2,7 @@ module Pages.Home_ exposing (page)
 
 import Color.Dracula
 import Core.Player as Player exposing (xpOf)
-import Core.Role.Card.RoleCard as RoleCard exposing (RoleCard)
+import Core.Role.Card.RoleCard as RoleCard exposing (DisplayMode(..), RoleCard)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -39,15 +39,14 @@ roleCardsView shared =
 
 roleView : Shared.Model -> RoleCard msg -> Element msg
 roleView shared role =
-    Element.link [ width fill ]
+    Element.link [ width <| maximum 122 <| fill ]
         { url = Route.Role__Id_ { id = role.id } |> Route.toHref
         , label =
             el
                 [ inFront <| displayXp (Player.xpOf role.role shared.player) role.xpToComplete
                 , width fill
                 ]
-            <|
-                RoleCard.cardView role
+                (RoleCard.view Card role)
         }
 
 

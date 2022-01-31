@@ -248,45 +248,55 @@ findById id =
 -- Display
 
 
-cardView : RoleCard msg -> Element msg
-cardView role =
-    let
-        cardWidth =
-            110
+type DisplayMode
+    = Badge
+    | Card
 
-        cardHeight : Int
-        cardHeight =
-            toFloat cardWidth
-                |> (*) 1.4
-                |> round
-    in
-    column
-        [ Border.rounded 5
-        , Border.solid
-        , Border.width 2
-        , Border.color Color.Dracula.white
-        , Background.color <| UI.Theme.darken 4 <| colorOf role.level
-        , height <| px cardHeight
-        , width <| minimum cardWidth fill
-        , spaceEvenly
-        , paddingXY 0 20
-        ]
-        [ el [ width <| px 100, centerX, paddingXY 15 0 ] role.icon
-        , el
-            [ centerX
-            , Font.bold
-            , Font.size 14
-            , paddingXY 0 5
-            , Font.shadow { offset = ( 2, 2 ), blur = 2, color = Color.Dracula.gray }
-            ]
-            (text role.label)
-        , el
-            [ centerX
-            , Font.size 12
-            , Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
-            ]
-            (text <| "Level " ++ Core.Level.toString role.level)
-        ]
+
+view : DisplayMode -> RoleCard msg -> Element msg
+view mode role =
+    case mode of
+        Badge ->
+            column
+                [ Border.rounded 5
+                , Border.solid
+                , Border.width 2
+                , Border.color Color.Dracula.white
+                , Background.color <| UI.Theme.darken 4 <| colorOf role.level
+                ]
+                [ el [ width <| px 50, centerX, paddingXY 5 5 ] role.icon ]
+
+        Card ->
+            column
+                [ Border.rounded 5
+                , Border.solid
+                , Border.width 2
+                , Border.color Color.Dracula.white
+                , Background.color <| UI.Theme.darken 4 <| colorOf role.level
+                , spacing 3
+                , width fill
+                , paddingXY 0 20
+                ]
+                [ el [ width <| px 100, centerX, paddingXY 15 0 ] role.icon
+                , el
+                    [ centerX
+                    , Font.bold
+                    , Font.size 14
+                    , paddingXY 0 5
+                    , Font.shadow { offset = ( 2, 2 ), blur = 2, color = Color.Dracula.gray }
+                    ]
+                    (text role.label)
+                , el
+                    [ centerX
+                    , Font.size 12
+                    , Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
+                    ]
+                    (text <| "Level " ++ Core.Level.toString role.level)
+                ]
+
+
+cardView : RoleCard msg -> Element msg
+cardView = view Card
 
 
 colorOf : Level -> Color

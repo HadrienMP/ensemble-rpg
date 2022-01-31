@@ -7,7 +7,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
 import Gen.Route as Route
-import UI.Icons exposing (comedyMasks, team)
+import UI.Icons as Icon
 import UI.Position as Position exposing (emptyPosition)
 
 
@@ -29,7 +29,7 @@ container children =
     <|
         el
             [ padding 10
-            , width (fill |> maximum maxWidthBody)
+            , width <| maximum maxWidthBody fill
             , centerX
             , Region.mainContent
             ]
@@ -68,9 +68,9 @@ navigation =
     <|
         row [ width <| maximum maxWidthBody <| fill, centerX ]
             [ navLink [ Border.widthEach { emptySides | left = 1, right = 1 } ]
-                { route = Route.Home_, label = el [ width <| px 30, centerX ] comedyMasks }
+                { route = Route.Home_, label = el [ width <| px 30, centerX ] Icon.comedyMasks }
             , navLink []
-                { route = Route.Team, label = el [ width <| px 30, centerX ] team }
+                { route = Route.Team, label = el [ width <| px 30, centerX ] Icon.ribbon }
             ]
 
 
