@@ -5,13 +5,13 @@ const path = require('path');
 
 let publicDirPath = path.join(__dirname + "/../", 'public');
 app.use(express.static(publicDirPath));
-app.get('/', (req, res) => {
+app.get('*', (req, res) => {
     res.sendFile(path.join(publicDirPath, "index.html"))
-}).get(/^\/role.*/, (req, res) => {
+}).get(/^(^api).*/, (req, res) => {
     res.sendFile(path.join(publicDirPath, "index.html"))
 })
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 1234
 app.listen(port, () => {
     console.log(`Live at http://0.0.0.0:${port}`)
 });
