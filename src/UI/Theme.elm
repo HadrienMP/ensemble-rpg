@@ -145,3 +145,83 @@ transparent amount color =
 toFactor : Int -> Float
 toFactor amount =
     toFloat (10 - amount) / 10
+
+
+type CardSize
+    = Big
+    | Small
+
+
+type alias CardParams msg =
+    { icon : Element msg
+    , color : Color
+    , size : CardSize
+    , main : Element msg
+    , sub : Element msg
+    }
+
+
+card : List (Attribute msg) -> CardParams msg -> Element msg
+card attr def =
+    case def.size of
+        Small ->
+            column
+                ([ Border.rounded 5
+                 , Border.solid
+                 , Border.width 2
+                 , Border.color Color.Dracula.white
+                 , Background.color <| darken 4 <| def.color
+                 , spacing 3
+                 , width shrink
+                 , paddingXY 6 12
+                 , centerX
+                 ]
+                    ++ attr
+                )
+                [ el [ width <| px 40, centerX, paddingXY 4 0 ] def.icon
+                , el
+                    [ centerX
+                    , Font.bold
+                    , Font.size 12
+                    , paddingXY 0 5
+                    , Font.shadow { offset = ( 2, 2 ), blur = 2, color = Color.Dracula.gray }
+                    ]
+                    def.main
+                , el
+                    [ centerX
+                    , Font.size 10
+                    , Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
+                    ]
+                    def.sub
+                ]
+
+        Big ->
+            column
+                ([ Border.rounded 5
+                 , Border.solid
+                 , Border.width 2
+                 , Border.color Color.Dracula.white
+                 , Background.color <| darken 4 <| def.color
+                 , spacing 3
+                 , width shrink
+                 , paddingXY 0 20
+                 , centerX
+                 ]
+                    ++ attr
+                )
+                [ el [ width <| px 100, centerX, paddingXY 15 0 ] def.icon
+                , el
+                    [ centerX
+                    , Font.bold
+                    , Font.size 14
+                    , paddingXY 0 5
+                    , Font.shadow { offset = ( 2, 2 ), blur = 2, color = Color.Dracula.gray }
+                    ]
+                    def.main
+                , el
+                    [ centerX
+                    , Font.size 12
+                    , Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
+                    ]
+                    def.sub
+                ]

@@ -3,7 +3,7 @@ module Pages.Role.Id_ exposing (Model, Msg, page)
 import Color.Dracula
 import Core.Player as Player
 import Core.Role
-import Core.Role.Card.RoleCard as RoleCard exposing (Behaviour, RoleCard)
+import Core.RoleCard as RoleCard exposing (Behaviour, RoleCard)
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background

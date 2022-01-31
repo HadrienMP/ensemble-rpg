@@ -1,4 +1,4 @@
-module Core.Role.Card.RoleCard exposing (..)
+module Core.RoleCard exposing (..)
 
 import AssocList exposing (Dict)
 import AssocList.Extra
@@ -12,6 +12,7 @@ import Element.Font as Font
 import List
 import UI.BadgeIcon
 import UI.Theme
+import UI.Theme exposing (CardSize(..))
 
 
 
@@ -267,36 +268,18 @@ view mode role =
                 [ el [ width <| px 50, centerX, paddingXY 5 5 ] role.icon ]
 
         Card ->
-            column
-                [ Border.rounded 5
-                , Border.solid
-                , Border.width 2
-                , Border.color Color.Dracula.white
-                , Background.color <| UI.Theme.darken 4 <| colorOf role.level
-                , spacing 3
-                , width fill
-                , paddingXY 0 20
-                ]
-                [ el [ width <| px 100, centerX, paddingXY 15 0 ] role.icon
-                , el
-                    [ centerX
-                    , Font.bold
-                    , Font.size 14
-                    , paddingXY 0 5
-                    , Font.shadow { offset = ( 2, 2 ), blur = 2, color = Color.Dracula.gray }
-                    ]
-                    (text role.label)
-                , el
-                    [ centerX
-                    , Font.size 12
-                    , Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
-                    ]
-                    (text <| "Level " ++ Core.Level.toString role.level)
-                ]
+            UI.Theme.card [ width fill ]
+                { icon = role.icon
+                , color = colorOf role.level
+                , size = Big
+                , main = text role.label
+                , sub = text <| "Level " ++ Core.Level.toString role.level
+                }
 
 
 cardView : RoleCard msg -> Element msg
-cardView = view Card
+cardView =
+    view Card
 
 
 colorOf : Level -> Color

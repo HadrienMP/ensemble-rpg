@@ -1,16 +1,19 @@
 module Pages.Team exposing (Model, Msg, page)
 
-import AssocList as Dict
-import Core.Player exposing (Player)
-import Core.Role.Card.RoleCard as RoleCard exposing (DisplayMode(..))
-import Element exposing (column, paddingEach, spacing, spacingXY, text)
+import Color.Dracula
+import Core.Player as Player exposing (Player)
+import Core.RoleCard as RoleCard exposing (DisplayMode(..))
+import Element exposing (column, el, paddingEach, row, spacing, spacingXY, text, wrappedRow)
 import Gen.Params.Team exposing (Params)
 import Page
 import Request
 import Shared
-import UI.Theme exposing (container, emptySides, h2)
+import UI.Icons
+import UI.Theme exposing (CardSize(..), container, emptySides, h2)
 import View exposing (View)
-import Element exposing (wrappedRow)
+import Element exposing (width)
+import Element exposing (fill)
+import Element exposing (shrink)
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
@@ -71,14 +74,16 @@ view model =
     , body =
         container [] <|
             column [ spacingXY 0 20 ]
-                [ column []
-                    [ h2 [ paddingEach { emptySides | bottom = 10 } ] <| text model.player.name
-                    , wrappedRow [ spacing 10 ]
-                        (model.player.xp
-                            |> Dict.toList
-                            |> List.map (Tuple.mapFirst RoleCard.fromRole)
-                            |> List.filter (\( role, xp ) -> xp >= role.xpToComplete)
-                            |> List.map Tuple.first
+                [ row [ spacing 10 ]
+                    [ UI.Theme.card [width shrink]
+                        { icon = UI.Icons.person
+                        , color = Color.Dracula.green
+                        , size = Small
+                        , main = text model.player.name
+                        , sub = text <| (String.fromInt <| Player.numberOfBadgesWon model.player) ++ " badges"
+                        }
+                    , wrappedRow [ spacing 10, width fill ]
+                        (Player.badgesWon model.player
                             |> List.map (RoleCard.view Badge)
                         )
                     ]

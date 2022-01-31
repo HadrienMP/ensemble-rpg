@@ -2,7 +2,7 @@ module Pages.Home_ exposing (page)
 
 import Color.Dracula
 import Core.Player as Player exposing (xpOf)
-import Core.Role.Card.RoleCard as RoleCard exposing (DisplayMode(..), RoleCard)
+import Core.RoleCard as RoleCard exposing (DisplayMode(..), RoleCard)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
