@@ -1,8 +1,5 @@
 module Core.Role exposing (..)
 
-import UI.BadgeIcon exposing (..)
-import Core.Level exposing (..)
-
 
 type Role
     = Driver
@@ -57,5 +54,3 @@ next list =
 
         Just TrafficCop ->
             list
-
-

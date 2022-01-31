@@ -10,7 +10,7 @@ import Element exposing (text)
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
-page shared req =
+page _ _ =
     Page.element
         { init = init
         , update = update

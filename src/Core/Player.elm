@@ -2,7 +2,6 @@ module Core.Player exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Core.Role exposing (Role)
-import Core.Role.Card.RoleCard as RoleCard
 
 
 type alias Player =

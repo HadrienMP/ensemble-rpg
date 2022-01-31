@@ -9,9 +9,8 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Gen.Route as Route exposing (Route(..))
 import List
-import UI.BadgeIcon exposing (..)
+import UI.BadgeIcon
 import UI.Theme
 
 
@@ -19,8 +18,9 @@ import UI.Theme
 -- Types
 
 
-type alias XpToComplete
-    = Int
+type alias XpToComplete =
+    Int
+
 
 type alias Behaviour =
     String
@@ -321,7 +321,7 @@ displayXpSlots xp card =
             text <|
                 String.fromInt xp
                     ++ "/"
-                    ++ (String.fromInt card.xpToComplete)
+                    ++ String.fromInt card.xpToComplete
 
 
 displayXp : Int -> XpToComplete -> Element msg

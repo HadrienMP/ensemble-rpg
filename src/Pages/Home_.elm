@@ -1,9 +1,8 @@
-module Pages.Home_ exposing (page, view)
+module Pages.Home_ exposing (page)
 
 import Color.Dracula
-import Core.Level exposing (Level(..))
-import Core.Player as Player
-import Core.Role.Card.RoleCard as RoleCard exposing (RoleCard, displayXpSlots)
+import Core.Player as Player exposing (xpOf)
+import Core.Role.Card.RoleCard as RoleCard exposing (RoleCard)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -11,14 +10,12 @@ import Gen.Route as Route
 import Page exposing (Page)
 import Request exposing (Request)
 import Shared
-import UI.Icons
 import UI.Theme
 import View exposing (View)
-import Core.Player exposing (xpOf)
 
 
 page : Shared.Model -> Request -> Page
-page shared req =
+page shared _ =
     Page.static
         { view = view shared
         }

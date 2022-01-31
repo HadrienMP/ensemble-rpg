@@ -7,12 +7,10 @@ module Shared exposing
     , update
     )
 
-import AssocList exposing (Dict)
 import Core.Player as Player exposing (Player)
-import Dict
+import Core.Role exposing (Role)
 import Json.Decode as Json
 import Request exposing (Request)
-import Core.Role exposing (Role)
 
 
 type alias Flags =
@@ -36,7 +34,7 @@ update : Request -> Msg -> Model -> ( Model, Cmd Msg )
 update _ msg model =
     case msg of
         XpChanged xp role ->
-            ( {model | player = Player.updateXp xp role model.player}, Cmd.none )
+            ( { model | player = Player.updateXp xp role model.player }, Cmd.none )
 
 
 subscriptions : Request -> Model -> Sub Msg

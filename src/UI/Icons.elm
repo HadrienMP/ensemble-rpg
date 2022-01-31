@@ -4,8 +4,8 @@ import Color.Dracula
 import Element exposing (Color, Element, html)
 import Hex
 import Html.Attributes exposing (attribute)
-import Svg as Svg exposing (Svg, defs, filter, g, node, path, svg)
-import Svg.Attributes exposing (d, id, viewBox)
+import Svg exposing (Svg, g, path, svg)
+import Svg.Attributes exposing (d, viewBox)
 
 
 toElement : Color -> String -> List (Svg msg) -> Element msg
@@ -33,7 +33,8 @@ printColor color =
 
 comedyMasks : Element msg
 comedyMasks =
-    toElement Color.Dracula.white "0, 0, 128, 128"
+    toElement Color.Dracula.white
+        "0, 0, 128, 128"
         [ g [ attribute "stroke" "none", attribute "transform" "translate(0.000000,128.000000) scale(0.100000,-0.100000)" ]
             [ path [ d "M470 1144 c-96 -32 -206 -40 -320 -25 -80 11 -94 11 -115 -3 -14 -9\n-27 -27 -31 -41 -11 -43 23 -337 46 -406 43 -127 139 -247 233 -289 50 -23\n124 -26 172 -6 89 37 180 178 211 326 14 65 14 97 4 233 -6 87 -16 171 -22\n188 -19 56 -60 61 -178 23z m54 -224 c18 -7 26 -17 26 -34 0 -30 -25 -46 -73\n-46 -59 0 -77 52 -27 77 30 15 41 16 74 3z m-258 -41 c19 -21 18 -21 -9 -45\n-30 -26 -52 -29 -91 -14 -52 19 -19 80 44 80 25 0 43 -7 56 -21z m247 -282\nc-58 -98 -248 -103 -298 -7 -23 45 -19 49 27 27 78 -39 222 -18 268 38 14 18\n15 17 18 -4 2 -12 -5 -36 -15 -54z" ]
                 []
