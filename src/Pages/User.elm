@@ -4,7 +4,7 @@ import Color.Dracula
 import Core.Player as Player exposing (Player)
 import Core.RoleCard exposing (DisplayMode(..))
 import Effect exposing (Effect)
-import Element exposing (centerX, column, el, fill, paddingEach, paddingXY, px, spacing, text, width, wrappedRow)
+import Element exposing (centerX, column, el, paddingEach, paddingXY, px, spacing, text, width, wrappedRow)
 import Element.Background
 import Element.Border
 import Element.Font

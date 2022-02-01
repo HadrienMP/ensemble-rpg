@@ -8,7 +8,6 @@ import Core.Role exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Font as Font
 import List
 import UI.BadgeIcon
 import UI.Theme

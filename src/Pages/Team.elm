@@ -3,13 +3,13 @@ module Pages.Team exposing (Model, Msg, page)
 import Color.Dracula
 import Core.Player as Player exposing (Player)
 import Core.RoleCard as RoleCard exposing (DisplayMode(..))
-import Element exposing (column, el, paddingEach, row, spacing, spacingXY, text, wrappedRow)
+import Element exposing (column, row, spacing, spacingXY, text, wrappedRow)
 import Gen.Params.Team exposing (Params)
 import Page
 import Request
 import Shared
 import UI.Icons
-import UI.Theme exposing (CardSize(..), container, emptySides, h2)
+import UI.Theme exposing (CardSize(..), container)
 import View exposing (View)
 import Element exposing (width)
 import Element exposing (fill)
