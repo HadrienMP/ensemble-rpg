@@ -76,7 +76,7 @@ update msg model =
     case msg of
         GainXp ->
             let
-                updatedPlayer = Player.gainXp model.card model.player
+                updatedPlayer = Player.gainXp model.card.role model.player
             in
             ( { model | player = updatedPlayer }
             , Effect.fromShared <| Shared.UpdatePlayer updatedPlayer
@@ -106,7 +106,7 @@ view model =
                     ]
                 , row [ spacingXY 20 0, width fill ]
                     [ h2 [ padding 0 ] <| text "XP"
-                    , RoleCard.displayXpSlots (Player.xpOf model.card model.player)
+                    , RoleCard.displayXpSlots (Player.progressOf model.card.role model.player)
                     ]
                 ]
     }

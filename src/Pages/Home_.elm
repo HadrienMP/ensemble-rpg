@@ -1,7 +1,7 @@
 module Pages.Home_ exposing (page)
 
 import Color.Dracula
-import Core.Player as Player exposing (xpOf)
+import Core.Player as Player exposing (progressOf)
 import Core.RoleCard as RoleCard exposing (DisplayMode(..), RoleCard)
 import Core.XpProgress exposing (XpProgress, completed)
 import Element exposing (..)
@@ -13,6 +13,7 @@ import Request exposing (Request)
 import Shared
 import UI.Theme
 import View exposing (View)
+import Core.Player exposing (accessibleLevels)
 
 
 page : Shared.Model -> Request -> Page
@@ -32,8 +33,7 @@ view shared =
 
 roleCardsView : Shared.Model -> Element msg
 roleCardsView shared =
-    RoleCard.all
-        |> List.filter (\card -> xpOf card shared.player |> not << completed)
+    Player.accessibleRoles shared.player
         |> List.map (roleView shared)
         |> wrappedRow [ spacing 10 ]
 
@@ -44,7 +44,7 @@ roleView shared role =
         { url = Route.Role__Id_ { id = role.id } |> Route.toHref
         , label =
             el
-                [ inFront <| displayXp <| Player.xpOf role shared.player
+                [ inFront <| displayXp <| Player.progressOf role.role shared.player
                 , width fill
                 ]
                 (RoleCard.view Card role)

@@ -13,7 +13,6 @@ import UI.Theme exposing (CardSize(..), container)
 import View exposing (View)
 import Element exposing (width)
 import Element exposing (fill)
-import Element exposing (shrink)
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg

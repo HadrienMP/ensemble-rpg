@@ -7,7 +7,8 @@
         "build": "elm-spa build",
         "start": "node server/app.js",
         "dev": "elm-spa server",
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "elm-test-rs",
+        "test:watch": "elm-test-rs --watch",
         "postinstall": "elm-tooling install",
         "remove-dead-code": "elm-review --template jfmengels/elm-review-unused/example --fix-all"
     },
