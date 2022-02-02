@@ -1,10 +1,11 @@
 module Core.Player exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Core.Animals
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
-import Core.Animals
 import Random
+import Core.XpProgress exposing (XpProgress)
 
 
 type alias Player =
@@ -12,23 +13,37 @@ type alias Player =
     , xp : Dict Role Int
     }
 
+
 generator : Random.Generator Player
-generator = Core.Animals.random |> Random.map (\animal -> Player animal Dict.empty)
+generator =
+    Core.Animals.random |> Random.map (\animal -> Player animal Dict.empty)
+
 
 unknown : Player
 unknown =
     { name = "Unknown", xp = Dict.empty }
 
 
-xpOf : Role -> Player -> Int
-xpOf role player =
-    Dict.get role player.xp
-        |> Maybe.withDefault 0
+xpOf : RoleCard msg -> Player -> XpProgress
+xpOf roleCard player =
+    { current = Dict.get roleCard.role player.xp |> Maybe.withDefault 0
+    , max = roleCard.xpToComplete
+    , role = roleCard.role
+    }
 
 
 updateXp : Int -> Role -> Player -> Player
 updateXp xp role player =
     { player | xp = Dict.insert role xp player.xp }
+
+
+gainXp : RoleCard msg -> Player -> Player
+gainXp roleCard player =
+    let
+        xp =
+            RoleCard.incXp (xpOf roleCard player)
+    in
+    { player | xp = Dict.insert xp.role xp.current player.xp }
 
 
 withName : String -> Player -> Player

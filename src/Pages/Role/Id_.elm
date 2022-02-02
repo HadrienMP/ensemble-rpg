@@ -1,7 +1,7 @@
 module Pages.Role.Id_ exposing (Model, Msg, page)
 
 import Color.Dracula
-import Core.Player as Player
+import Core.Player as Player exposing (Player)
 import Core.Role
 import Core.RoleCard as RoleCard exposing (Behaviour, RoleCard)
 import Effect exposing (Effect)
@@ -41,7 +41,7 @@ type Msg
 
 type alias Model =
     { card : RoleCard Msg
-    , xp : Int
+    , player : Player
     }
 
 
@@ -55,12 +55,12 @@ init : Shared.Model -> Request.With Params -> ( Model, Effect Msg )
 init shared req =
     case RoleCard.findById req.params.id of
         Just card ->
-            ( { card = card, xp = Player.xpOf card.role shared.player }
+            ( { card = card, player = shared.player }
             , Effect.none
             )
 
         Nothing ->
-            ( { card = RoleCard.fromRole Core.Role.Mobber, xp = 0 }
+            ( { card = RoleCard.fromRole Core.Role.Mobber, player = Player.unknown }
             , Effect.fromCmd <| Request.replaceRoute Gen.Route.NotFound req
             )
 
@@ -76,12 +76,10 @@ update msg model =
     case msg of
         GainXp ->
             let
-                newXp =
-                    RoleCard.incXp model.xp model.card
+                updatedPlayer = Player.gainXp model.card model.player
             in
-            
-            ( { model | xp = newXp }
-            , Effect.fromShared <| Shared.XpChanged newXp model.card.role
+            ( { model | player = updatedPlayer }
+            , Effect.fromShared <| Shared.UpdatePlayer updatedPlayer
             )
 
 
@@ -108,7 +106,7 @@ view model =
                     ]
                 , row [ spacingXY 20 0, width fill ]
                     [ h2 [ padding 0 ] <| text "XP"
-                    , RoleCard.displayXpSlots model.xp model.card
+                    , RoleCard.displayXpSlots (Player.xpOf model.card model.player)
                     ]
                 ]
     }
@@ -155,6 +153,7 @@ displayBehaviour behaviour =
                 , paragraph [ Font.justify ] [ text behaviour ]
                 ]
         }
+
 
 
 -- ###########################################

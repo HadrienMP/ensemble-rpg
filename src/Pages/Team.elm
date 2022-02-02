@@ -75,7 +75,7 @@ view model =
         container [] <|
             column [ spacingXY 0 20 ]
                 [ row [ spacing 10 ]
-                    [ UI.Theme.card [width shrink]
+                    [ UI.Theme.card []
                         { icon = UI.Icons.person
                         , color = Color.Dracula.green
                         , size = Small

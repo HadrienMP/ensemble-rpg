@@ -172,7 +172,7 @@ card attr def =
                  , Border.color Color.Dracula.white
                  , Background.color <| darken 4 <| def.color
                  , spacing 3
-                 , width shrink
+                 , width <| minimum 70 <| shrink
                  , paddingXY 6 12
                  , centerX
                  ]

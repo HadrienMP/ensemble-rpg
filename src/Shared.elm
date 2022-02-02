@@ -12,7 +12,6 @@ import Core.Role exposing (Role)
 import Json.Decode as Json
 import Random
 import Request exposing (Request)
-import Core.Animals
 
 
 type alias Flags =

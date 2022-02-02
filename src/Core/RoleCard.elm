@@ -12,6 +12,7 @@ import List
 import UI.BadgeIcon
 import UI.Theme
 import UI.Theme exposing (CardSize(..))
+import Core.XpProgress exposing (XpProgress)
 
 
 
@@ -43,9 +44,9 @@ type alias RoleCard msg =
     }
 
 
-incXp : Int -> RoleCard msg -> Int
-incXp xp card =
-    min (xp + 1) card.xpToComplete
+incXp : XpProgress -> XpProgress
+incXp progress =
+    {progress | current = min (progress.current + 1) progress.max}
 
 
 
@@ -297,32 +298,32 @@ colorOf level =
             Color.Dracula.red
 
 
-displayXpSlots : Int -> RoleCard msg -> Element msg
-displayXpSlots xp card =
+displayXpSlots : XpProgress -> Element msg
+displayXpSlots progress =
     el
         [ width fill
         , Border.solid
         , Border.width 1
         , Border.color Color.Dracula.gray
         , padding 6
-        , behindContent <| displayXp xp card.xpToComplete
+        , behindContent <| displayXp progress
         , clipY
         ]
     <|
         el [ centerX ] <|
             text <|
-                String.fromInt xp
+                String.fromInt progress.current
                     ++ "/"
-                    ++ String.fromInt card.xpToComplete
+                    ++ String.fromInt progress.max
 
 
-displayXp : Int -> XpToComplete -> Element msg
-displayXp current max =
-    max
+displayXp : XpProgress -> Element msg
+displayXp progress =
+    progress.max
         |> List.range 1
         |> List.map
             (\xp ->
-                if xp <= current then
+                if xp <= progress.current then
                     [ Background.color Color.Dracula.green
                     , Border.shadow
                         { offset = ( 0, 0 )
