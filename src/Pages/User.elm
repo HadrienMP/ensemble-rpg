@@ -53,7 +53,11 @@ update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         NameChanged name ->
-            ( { model | player = Player.updateName name model.player }, Effect.fromShared <| Shared.NameChanged name )
+            let
+                updatedPlayer = Player.withName name model.player
+            in
+            
+            ( { model | player = updatedPlayer }, Effect.fromShared <| Shared.UpdatePlayer updatedPlayer )
 
 
 

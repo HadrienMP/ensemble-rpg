@@ -3,6 +3,8 @@ module Core.Player exposing (..)
 import AssocList as Dict exposing (Dict)
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
+import Core.Animals
+import Random
 
 
 type alias Player =
@@ -10,6 +12,8 @@ type alias Player =
     , xp : Dict Role Int
     }
 
+generator : Random.Generator Player
+generator = Core.Animals.random |> Random.map (\animal -> Player animal Dict.empty)
 
 unknown : Player
 unknown =
@@ -27,8 +31,8 @@ updateXp xp role player =
     { player | xp = Dict.insert role xp player.xp }
 
 
-updateName : String -> Player -> Player
-updateName name player =
+withName : String -> Player -> Player
+withName name player =
     { player | name = name }
 
 
