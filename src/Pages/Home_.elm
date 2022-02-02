@@ -1,9 +1,9 @@
 module Pages.Home_ exposing (page)
 
 import Color.Dracula
-import Core.Player as Player exposing (progressOf)
+import Core.Player as Player
 import Core.RoleCard as RoleCard exposing (DisplayMode(..), RoleCard)
-import Core.XpProgress exposing (XpProgress, completed)
+import Core.XpProgress exposing (XpProgress)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -13,7 +13,6 @@ import Request exposing (Request)
 import Shared
 import UI.Theme
 import View exposing (View)
-import Core.Player exposing (accessibleLevels)
 
 
 page : Shared.Model -> Request -> Page
