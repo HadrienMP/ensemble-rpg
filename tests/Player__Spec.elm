@@ -82,5 +82,6 @@ joinGame : Player
 joinGame =
     { id = Core.PlayerId.empty
     , name = "Jane"
+    , icon = 'c'
     , xp = Dict.empty
     }

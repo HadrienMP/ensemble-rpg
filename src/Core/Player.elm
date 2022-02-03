@@ -2,33 +2,32 @@ module Core.Player exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Core.Level exposing (..)
+import Core.PlayerId as PlayerId exposing (..)
+import Core.PlayerName
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
 import Core.XpProgress exposing (XpProgress, completed)
-import Core.PlayerId as PlayerId exposing (..)
 import Random
+import Random.Char
 import Random.String
-import Random.Char 
-import Core.PlayerName
-
-
 
 
 type alias Player =
-    { id: PlayerId
+    { id : PlayerId
     , name : String
+    , icon : Char
     , xp : Dict Role Int
     }
 
 
 unknown : Player
 unknown =
-    Player PlayerId.empty "" Dict.empty
+    Player PlayerId.empty "" '😀' Dict.empty
 
 
 generator : Random.Generator Player
 generator =
-    Random.map2 (\a b -> Player a b Dict.empty) PlayerId.generator Core.PlayerName.generator
+    Random.map3 (\a b c -> Player a b c Dict.empty) PlayerId.generator Core.PlayerName.generator Random.Char.emoticon
 
 
 progressOf : Role -> Player -> XpProgress

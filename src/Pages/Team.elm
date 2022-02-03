@@ -11,8 +11,8 @@ import Shared
 import UI.Icons
 import UI.Theme exposing (CardSize(..), container)
 import View exposing (View)
-import Element exposing (width)
-import Element exposing (fill)
+import Element exposing (..)
+import Element.Font as Font exposing (Font)
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
@@ -75,7 +75,7 @@ view model =
             column [ spacingXY 0 20 ]
                 [ row [ spacing 10 ]
                     [ UI.Theme.card []
-                        { icon = UI.Icons.person
+                        { icon = el [Font.size 30, centerX] <| text <| String.fromChar model.player.icon
                         , color = Color.Dracula.green
                         , size = Small
                         , main = text model.player.name

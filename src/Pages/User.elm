@@ -80,7 +80,7 @@ view model =
         UI.Theme.container [] <|
             column [ centerX, spacing 20 ]
                 [ UI.Theme.card []
-                    { icon = UI.Icons.person
+                    { icon = el [Element.Font.size 60, centerX] <| text <| String.fromChar model.player.icon
                     , color = Color.Dracula.green
                     , size = Big
                     , main =
