@@ -1,9 +1,9 @@
-module Core.Animals exposing (random)
+module Core.PlayerName exposing (generator)
 import Random
 import Dict
 
-random : Random.Generator String
-random = 
+generator : Random.Generator String
+generator = 
     Random.int 0 (List.length names)
     |> Random.map (\i -> Dict.get i indexed)
     |> Random.map (Maybe.withDefault "Alpaca")
@@ -23,7 +23,6 @@ names =
     , "Antelope"
     , "Ape"
     , "Armadillo"
-    , "Donkey"
     , "Baboon"
     , "Badger"
     , "Barracuda"
@@ -41,17 +40,13 @@ names =
     , "Cassowary"
     , "Cat"
     , "Caterpillar"
-    , "Cattle"
     , "Chamois"
     , "Cheetah"
-    , "Chicken"
     , "Chimpanzee"
     , "Chinchilla"
     , "Chough"
     , "Clam"
     , "Cobra"
-    , "Cockroach"
-    , "Cod"
     , "Cormorant"
     , "Coyote"
     , "Crab"
@@ -80,7 +75,6 @@ names =
     , "Falcon"
     , "Ferret"
     , "Finch"
-    , "Fish"
     , "Flamingo"
     , "Fly"
     , "Fox"
@@ -110,7 +104,6 @@ names =
     , "Hippopotamus"
     , "Hornet"
     , "Horse"
-    , "Human"
     , "Hummingbird"
     , "Hyena"
     , "Ibex"

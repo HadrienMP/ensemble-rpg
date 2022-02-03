@@ -12,6 +12,7 @@ import Core.Role exposing (Role)
 import Json.Decode as Json
 import Random
 import Request exposing (Request)
+import Core.Player as Player
 
 
 type alias Flags =
@@ -36,7 +37,7 @@ update : Request -> Msg -> Model -> ( Model, Cmd Msg )
 update _ msg model =
     case msg of
         UpdatePlayer player ->
-            ( { model | player = player }, Cmd.none )
+            ( { model | player = Debug.log "player" player }, Cmd.none )
 
         XpChanged xp role ->
             ( { model | player = Player.updateXp xp role model.player }, Cmd.none )

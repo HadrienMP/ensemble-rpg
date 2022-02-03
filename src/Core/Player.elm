@@ -1,29 +1,34 @@
 module Core.Player exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Core.Animals
+import Core.Level exposing (..)
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
-import Core.XpProgress exposing (XpProgress)
+import Core.XpProgress exposing (XpProgress, completed)
+import Core.PlayerId as PlayerId exposing (..)
 import Random
-import Core.Level exposing (..)
-import Core.XpProgress exposing (completed)
+import Random.String
+import Random.Char 
+import Core.PlayerName
+
+
 
 
 type alias Player =
-    { name : String
+    { id: PlayerId
+    , name : String
     , xp : Dict Role Int
     }
 
 
-generator : Random.Generator Player
-generator =
-    Core.Animals.random |> Random.map (\animal -> Player animal Dict.empty)
-
-
 unknown : Player
 unknown =
-    { name = "Unknown", xp = Dict.empty }
+    Player PlayerId.empty "" Dict.empty
+
+
+generator : Random.Generator Player
+generator =
+    Random.map2 (\a b -> Player a b Dict.empty) PlayerId.generator Core.PlayerName.generator
 
 
 progressOf : Role -> Player -> XpProgress
@@ -101,12 +106,12 @@ countRolesCompleted player level =
         |> List.length
 
 
-
 accessibleRoles : Player -> List (RoleCard msg)
 accessibleRoles player =
-    let 
-        levels = accessibleLevels player
+    let
+        levels =
+            accessibleLevels player
     in
     RoleCard.all
-    |> List.filter (\card -> List.member card.level levels)
-    |> List.filter (\card -> progressOf card.role player |> not << completed)
+        |> List.filter (\card -> List.member card.level levels)
+        |> List.filter (\card -> progressOf card.role player |> not << completed)

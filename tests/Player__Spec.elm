@@ -1,12 +1,12 @@
-module Tests exposing (..)
+module Player__Spec exposing (..)
 
 import Core.Level exposing (Level(..))
 import Core.Player exposing (Player, accessibleLevels)
 import Core.Role
-import Core.RoleCard
+import AssocList as Dict
 import Expect
-import Svg exposing (desc)
 import Test exposing (..)
+import Core.PlayerId
 
 
 suite : Test
@@ -80,4 +80,7 @@ completeRole role =
 
 joinGame : Player
 joinGame =
-    Core.Player.unknown |> Core.Player.withName "Jane"
+    { id = Core.PlayerId.empty
+    , name = "Jane"
+    , xp = Dict.empty
+    }
