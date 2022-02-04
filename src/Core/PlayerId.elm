@@ -4,7 +4,6 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode
 import Random
 import Random.Char as RC
-import Random.List
 import Random.String as RS
 
 

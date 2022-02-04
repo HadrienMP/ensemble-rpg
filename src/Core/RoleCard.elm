@@ -5,14 +5,15 @@ import AssocList.Extra
 import Color.Dracula
 import Core.Level exposing (..)
 import Core.Role exposing (..)
+import Core.XpProgress exposing (XpProgress)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Json.Decode
+import Json.Encode
 import List
 import UI.BadgeIcon
-import UI.Theme
 import UI.Theme exposing (CardSize(..))
-import Core.XpProgress exposing (XpProgress)
 
 
 
@@ -46,7 +47,24 @@ type alias RoleCard msg =
 
 incXp : XpProgress -> XpProgress
 incXp progress =
-    {progress | current = min (progress.current + 1) progress.max}
+    { progress | current = min (progress.current + 1) progress.max }
+
+
+
+-- Json
+
+
+encode : Role -> Json.Encode.Value
+encode role =
+    fromRole role |> .id |> Json.Encode.string
+
+
+decoder : Json.Decode.Decoder Role
+decoder =
+    Json.Decode.string
+        |> Json.Decode.map findById
+        |> Json.Decode.map (Maybe.map .role)
+        |> Json.Decode.map (Maybe.withDefault Driver)
 
 
 

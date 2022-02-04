@@ -1,9 +1,8 @@
 port module Js.Events exposing (..)
 
+import Core.Player exposing (Player)
 import Core.PlayerId as PlayerId exposing (..)
 import Core.Role exposing (Role(..))
-import Core.RoleCard
-import Core.XpProgress
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode
@@ -19,9 +18,17 @@ port receiveOne : (Json.Encode.Value -> msg) -> Sub msg
 port receiveHistory : (List Json.Encode.Value -> msg) -> Sub msg
 
 
+publish : Event -> Cmd msg
+publish event =
+    encode event |> publishEvent
+
+
+type alias JoinedData =
+    { name : String, icon : Char }
+
+
 type EventDetails
-    = NameChanged String
-    | RoleCompleted Role
+    = PlayerUpdated Player
 
 
 type alias Event =
@@ -39,18 +46,11 @@ encode event =
 encodeDetails : EventDetails -> Json.Encode.Value
 encodeDetails eventDetails =
     case eventDetails of
-        NameChanged name ->
+        PlayerUpdated player ->
             Json.Encode.object
-                [ ( "event", Json.Encode.string "NamedChanged" )
-                , ( "name", Json.Encode.string name )
+                [ ( "event", Json.Encode.string "PlayerUpdated" )
+                , ( "player", Core.Player.encode player )
                 ]
-
-        RoleCompleted role ->
-            Json.Encode.object
-                [ ( "event", Json.Encode.string "CompletedRole" )
-                , ( "role", Core.RoleCard.fromRole role |> .id |> Json.Encode.string )
-                ]
-
 
 eventDecoder : Decode.Decoder Event
 eventDecoder =
@@ -68,13 +68,9 @@ detailsDecoder =
 eventFromNameDecoder : String -> Decode.Decoder EventDetails
 eventFromNameDecoder eventName =
     case eventName of
-        "NamedChanged" ->
-            Decode.succeed NameChanged
-                |> required "name" Decode.string
-
-        "CompletedRole" ->
-            Decode.succeed RoleCompleted
-                |> required "role" roleDecoder
+        "PlayerUpdated" ->
+            Decode.succeed PlayerUpdated
+                |> required "player" Core.Player.decoder
 
         _ ->
             Decode.fail <| "I don't know this event " ++ eventName

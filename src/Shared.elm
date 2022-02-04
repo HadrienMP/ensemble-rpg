@@ -8,11 +8,10 @@ module Shared exposing
     )
 
 import Core.Player as Player exposing (Player)
-import Core.Role exposing (Role)
+import Js.Events
 import Json.Decode as Json
 import Random
 import Request exposing (Request)
-import Core.Player as Player
 
 
 type alias Flags =
@@ -24,8 +23,7 @@ type alias Model =
 
 
 type Msg
-    = XpChanged Int Role
-    | UpdatePlayer Player
+    = UpdatePlayer Player
 
 
 init : Request -> Flags -> ( Model, Cmd Msg )
@@ -37,11 +35,9 @@ update : Request -> Msg -> Model -> ( Model, Cmd Msg )
 update _ msg model =
     case msg of
         UpdatePlayer player ->
-            ( { model | player = Debug.log "player" player }, Cmd.none )
-
-        XpChanged xp role ->
-            ( { model | player = Player.updateXp xp role model.player }, Cmd.none )
-
+            ( { model | player = player }
+            , Js.Events.publish (Js.Events.Event player.id <| Js.Events.PlayerUpdated player)
+            )
 
 subscriptions : Request -> Model -> Sub Msg
 subscriptions _ _ =

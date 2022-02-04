@@ -7,9 +7,12 @@ import Core.PlayerName
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
 import Core.XpProgress exposing (XpProgress, completed)
+import Json.Decode exposing (Decoder)
+import Json.Decode.Pipeline exposing (required)
+import Json.Encode
 import Random
 import Random.Char
-import Random.String
+import Js.DecoderExtra
 
 
 type alias Player =
@@ -23,6 +26,47 @@ type alias Player =
 unknown : Player
 unknown =
     Player PlayerId.empty "" '😀' Dict.empty
+
+
+
+-- Json
+
+
+encode : Player -> Json.Encode.Value
+encode player =
+    Json.Encode.object
+        [ ( "id", PlayerId.encode player.id )
+        , ( "name", Json.Encode.string player.name )
+        , ( "icon", Json.Encode.string (String.fromChar player.icon) )
+        , ( "xp"
+          , player.xp
+                |> Dict.toList
+                |> List.map (\( role, x ) -> [ ( "role", RoleCard.encode role ), ( "xp", Json.Encode.int x ) ])
+                |> Json.Encode.list Json.Encode.object
+          )
+        ]
+
+
+decoder : Decoder Player
+decoder =
+    Json.Decode.succeed Player
+        |> required "id" PlayerId.decoder
+        |> required "name" Json.Decode.string
+        |> required "icon" Js.DecoderExtra.firstCharDecoder
+        |> required "xp" playerXpDecoder
+
+
+playerXpDecoder : Decoder (Dict Role Int)
+playerXpDecoder =
+    Json.Decode.succeed Tuple.pair
+        |> required "role" RoleCard.decoder
+        |> required "xp" Json.Decode.int
+        |> Json.Decode.list
+        |> Json.Decode.map Dict.fromList
+
+
+
+--
 
 
 generator : Random.Generator Player
