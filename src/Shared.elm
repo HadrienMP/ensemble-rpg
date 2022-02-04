@@ -24,6 +24,8 @@ type alias Model =
 
 type Msg
     = UpdatePlayer Player
+    | GotUpdatedPlayer (Result Json.Error Js.Events.Event)
+    | GotHistory (Result Json.Error (List Js.Events.Event))
 
 
 init : Request -> Flags -> ( Model, Cmd Msg )
@@ -39,6 +41,16 @@ update _ msg model =
             , Js.Events.publish (Js.Events.Event player.id <| Js.Events.PlayerUpdated player)
             )
 
+        GotUpdatedPlayer _ ->
+            ( model, Cmd.none )
+
+        GotHistory _ ->
+            ( model, Cmd.none )
+
+
 subscriptions : Request -> Model -> Sub Msg
 subscriptions _ _ =
-    Sub.none
+    Sub.batch
+        [ Js.Events.listenToOne GotUpdatedPlayer
+        , Js.Events.listenToHistory GotHistory
+        ]

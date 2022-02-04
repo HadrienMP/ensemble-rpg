@@ -12,10 +12,28 @@
 </head>
 
 <body>
+  <script src="/socket.io/socket.io.js"></script>
   <script src="/dist/elm.js"></script>
   <script>
     const app = Elm.Main.init()
-    app.ports.publishEvent.subscribe(console.log);
+    var socket = io();
+    app.ports.publishEvent.subscribe(event => {
+      socket.emit('message', 'the-only-room', event);
+    });
+    socket.on('message', data => {
+      console.log(data);
+      app.ports.receiveOne.send(data);
+    });
+    socket.on('history', data => {
+      // app.ports.receiveHistory.send(data);
+    });
+
+    socket.on('connect', () => {
+      socket.emit('join', 'the-only-room');
+    });
+    socket.on("disconnect", () => {
+      alert('you were disconnected from the room, try to refresh');
+    });
   </script>
 </body>
 

@@ -6,7 +6,8 @@
     "scripts": {
         "build": "elm-spa build",
         "start": "node server/app.js",
-        "dev": "elm-spa server",
+        "dev": "concurrently \"npm run watch\"  \"nodemon server/app.js\" ",
+        "watch": "watch 'elm-spa gen && elm make .elm-spa/defaults/Main.elm' src",
         "test": "elm-test-rs",
         "test:watch": "elm-test-rs --watch",
         "postinstall": "elm-tooling install",
@@ -15,11 +16,15 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "concurrently": "^7.0.0",
         "elm-review": "^2.7.0",
         "elm-spa": "^6.0.4",
-        "elm-tooling": "^1.7.0"
+        "elm-tooling": "^1.7.0",
+        "nodemon": "^2.0.15"
     },
     "dependencies": {
-        "express": "^4.17.2"
+        "express": "^4.17.2",
+        "socket.io": "^4.4.1",
+        "watch": "^1.0.2"
     }
 }
