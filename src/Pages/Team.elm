@@ -8,11 +8,10 @@ import Gen.Params.Team exposing (Params)
 import Page
 import Request
 import Shared
-import UI.Icons
 import UI.Theme exposing (CardSize(..), container)
 import View exposing (View)
 import Element exposing (..)
-import Element.Font as Font exposing (Font)
+import Element.Font as Font
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg

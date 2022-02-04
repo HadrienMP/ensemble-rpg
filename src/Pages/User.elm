@@ -13,7 +13,6 @@ import Gen.Params.User exposing (Params)
 import Page
 import Request
 import Shared
-import UI.Icons
 import UI.Theme exposing (CardSize(..), emptySides, transparent)
 import View exposing (View)
 
