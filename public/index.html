@@ -21,11 +21,12 @@
       socket.emit('message', 'the-only-room', event);
     });
     socket.on('message', data => {
-      console.log(data);
+      console.log('message', data);
       app.ports.receiveOne.send(data);
     });
     socket.on('history', data => {
-      // app.ports.receiveHistory.send(data);
+      console.log('history', data);
+      app.ports.receiveHistory.send(data);
     });
 
     socket.on('connect', () => {

@@ -15,7 +15,7 @@ port publishEvent : Json.Encode.Value -> Cmd msg
 port receiveOne : (Json.Encode.Value -> msg) -> Sub msg
 
 
-port receiveHistory : (List Json.Encode.Value -> msg) -> Sub msg
+port receiveHistory : (Json.Encode.Value -> msg) -> Sub msg
 
 listenToOne : (Result Decode.Error Event -> msg) -> Sub msg
 listenToOne msgF =
@@ -23,7 +23,7 @@ listenToOne msgF =
 
 listenToHistory : (Result Decode.Error (List Event) -> msg) -> Sub msg
 listenToHistory msgF =
-    receiveOne (\value -> Decode.decodeValue (Decode.list eventDecoder) value |> msgF)
+    receiveHistory (\value -> Decode.decodeValue (Decode.list eventDecoder) value |> msgF)
 
 
 publish : Event -> Cmd msg
