@@ -3,8 +3,7 @@ module Core.PlayerId exposing (..)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode
 import Random
-import Random.Char as RC
-import Random.String as RS
+import Uuid exposing (uuidGenerator)
 
 
 type PlayerId
@@ -31,7 +30,4 @@ encode player =
 
 generator : Random.Generator PlayerId
 generator =
-    [ RC.geometricShape, RC.egyptianHieroglyph, RC.alchemicalSymbol ]
-        |> List.map (RS.string 3)
-        |> List.foldr (Random.map2 (++)) (Random.constant "")
-        |> Random.map (\uuid -> PlayerId uuid)
+    uuidGenerator |> Random.map Uuid.toString |> Random.map PlayerId

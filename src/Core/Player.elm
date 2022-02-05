@@ -7,12 +7,12 @@ import Core.PlayerName
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
 import Core.XpProgress exposing (XpProgress, completed)
+import Js.DecoderExtra
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode
 import Random
 import Random.Char
-import Js.DecoderExtra
 
 
 type alias Player =
@@ -71,7 +71,10 @@ playerXpDecoder =
 
 generator : Random.Generator Player
 generator =
-    Random.map3 (\a b c -> Player a b c Dict.empty) PlayerId.generator Core.PlayerName.generator Random.Char.emoticon
+    Random.map3 (\a b c -> Player a b c Dict.empty)
+        PlayerId.generator
+        Core.PlayerName.generator
+        Random.Char.emoticon
 
 
 progressOf : Role -> Player -> XpProgress
@@ -107,11 +110,11 @@ withName name player =
 
 numberOfBadgesWon : Player -> Int
 numberOfBadgesWon player =
-    List.length <| badgesWon player
+    List.length <| completedRoleCards player
 
 
-badgesWon : Player -> List (RoleCard msg)
-badgesWon player =
+completedRoleCards : Player -> List (RoleCard msg)
+completedRoleCards player =
     player.xp
         |> Dict.toList
         |> List.map (Tuple.mapFirst RoleCard.fromRole)
@@ -143,7 +146,7 @@ isLevelAccessibleTo player level =
 
 countRolesCompleted : Player -> Level -> Int
 countRolesCompleted player level =
-    badgesWon player
+    completedRoleCards player
         |> List.map .level
         |> List.filter (\l -> l == level)
         |> List.length

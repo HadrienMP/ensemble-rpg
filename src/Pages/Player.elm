@@ -101,7 +101,7 @@ view player _ =
                     , sub = text <| (String.fromInt <| Player.numberOfBadgesWon player) ++ " badges"
                     }
                 , wrappedRow [ spacing 10, centerX ]
-                    (Player.badgesWon player
+                    (Player.completedRoleCards player
                         |> List.map (Core.RoleCard.view Badge)
                     )
                 ]

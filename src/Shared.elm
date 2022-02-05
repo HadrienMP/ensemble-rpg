@@ -5,11 +5,16 @@ module Shared exposing
     , init
     , subscriptions
     , update
+    , allPlayers
     )
 
+import AssocList as Dict exposing (Dict)
+import Core.OtherPlayer exposing (OtherPlayer)
 import Core.Player as Player exposing (Player)
-import Js.Events
+import Core.PlayerId exposing (PlayerId)
+import Js.Events exposing (Event, EventDetails(..))
 import Json.Decode as Json
+import List exposing (head)
 import Random
 import Request exposing (Request)
 
@@ -19,8 +24,13 @@ type alias Flags =
 
 
 type alias Model =
-    { player : Player }
+    { player : Player
+    , otherPlayers : Dict PlayerId OtherPlayer
+    }
 
+allPlayers : Model -> List OtherPlayer
+allPlayers model =
+    (Core.OtherPlayer.fromPlayer model.player) :: (Dict.values model.otherPlayers)
 
 type Msg
     = UpdatePlayer Player
@@ -30,7 +40,11 @@ type Msg
 
 init : Request -> Flags -> ( Model, Cmd Msg )
 init _ _ =
-    ( { player = Player.unknown }, Random.generate UpdatePlayer Player.generator )
+    ( { player = Player.unknown
+      , otherPlayers = Dict.empty
+      }
+    , Random.generate UpdatePlayer Player.generator
+    )
 
 
 update : Request -> Msg -> Model -> ( Model, Cmd Msg )
@@ -38,14 +52,46 @@ update _ msg model =
     case msg of
         UpdatePlayer player ->
             ( { model | player = player }
-            , Js.Events.publish (Js.Events.Event player.id <| Js.Events.PlayerUpdated player)
+            , Core.OtherPlayer.fromPlayer player
+                |> Js.Events.PlayerUpdated
+                |> Js.Events.Event player.id
+                |> Js.Events.publish
             )
 
-        GotUpdatedPlayer _ ->
-            ( model, Cmd.none )
+        GotUpdatedPlayer result ->
+            ( result
+                |> Result.map (evolve model)
+                |> Result.withDefault model
+            , Cmd.none
+            )
 
-        GotHistory _ ->
-            ( model, Cmd.none )
+        GotHistory result ->
+            ( result
+                |> Result.map (evolveMany model)
+                |> Result.withDefault model
+            , Cmd.none
+            )
+
+
+evolveMany : Model -> List Event -> Model
+evolveMany model events =
+    case events of
+        [] ->
+            model
+
+        head :: tail ->
+            evolveMany (evolve model head) tail
+
+
+evolve : Model -> Event -> Model
+evolve model event =
+    case event.details of
+        PlayerUpdated otherPlayer ->
+            if otherPlayer.id == model.player.id then
+                model
+
+            else
+                { model | otherPlayers = Dict.insert event.playerId otherPlayer model.otherPlayers }
 
 
 subscriptions : Request -> Model -> Sub Msg

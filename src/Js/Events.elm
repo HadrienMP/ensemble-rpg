@@ -1,12 +1,12 @@
 port module Js.Events exposing (..)
 
-import Core.Player exposing (Player)
 import Core.PlayerId as PlayerId exposing (..)
 import Core.Role exposing (Role(..))
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode
 import Test.Html.Event exposing (Event)
+import Core.OtherPlayer exposing (OtherPlayer)
 
 
 port publishEvent : Json.Encode.Value -> Cmd msg
@@ -36,7 +36,7 @@ type alias JoinedData =
 
 
 type EventDetails
-    = PlayerUpdated Player
+    = PlayerUpdated OtherPlayer
 
 
 type alias Event =
@@ -57,7 +57,7 @@ encodeDetails eventDetails =
         PlayerUpdated player ->
             Json.Encode.object
                 [ ( "event", Json.Encode.string "PlayerUpdated" )
-                , ( "player", Core.Player.encode player )
+                , ( "player", Core.OtherPlayer.encode player )
                 ]
 
 eventDecoder : Decode.Decoder Event
@@ -78,7 +78,7 @@ eventFromNameDecoder eventName =
     case eventName of
         "PlayerUpdated" ->
             Decode.succeed PlayerUpdated
-                |> required "player" Core.Player.decoder
+                |> required "player" Core.OtherPlayer.decoder
 
         _ ->
             Decode.fail <| "I don't know this event " ++ eventName
