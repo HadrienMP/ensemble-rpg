@@ -22,9 +22,9 @@ import View exposing (View)
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
 page shared req =
     Page.advanced
-        { init = init shared req
-        , update = update
-        , view = view
+        { init = init req
+        , update = update shared.player
+        , view = view shared.player
         , subscriptions = subscriptions
         }
 
@@ -40,9 +40,7 @@ type Msg
 
 
 type alias Model =
-    { card : RoleCard Msg
-    , player : Player
-    }
+    { card : RoleCard Msg }
 
 
 
@@ -51,16 +49,16 @@ type alias Model =
 -- ###########################################
 
 
-init : Shared.Model -> Request.With Params -> ( Model, Effect Msg )
-init shared req =
+init : Request.With Params -> ( Model, Effect Msg )
+init req =
     case RoleCard.findById req.params.id of
         Just card ->
-            ( { card = card, player = shared.player }
+            ( { card = card }
             , Effect.none
             )
 
         Nothing ->
-            ( { card = RoleCard.fromRole Core.Role.Mobber, player = Player.unknown }
+            ( { card = RoleCard.fromRole Core.Role.Mobber }
             , Effect.fromCmd <| Request.replaceRoute Gen.Route.NotFound req
             )
 
@@ -71,16 +69,15 @@ init shared req =
 -- ###########################################
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Player -> Msg -> Model -> ( Model, Effect Msg )
+update player msg model =
     case msg of
         GainXp ->
             let
-                updatedPlayer = Player.gainXp model.card.role model.player
+                updatedPlayer =
+                    Player.gainXp model.card.role player
             in
-            ( { model | player = updatedPlayer }
-            , Effect.fromShared <| Shared.UpdatePlayer updatedPlayer
-            )
+            ( model , Effect.fromShared <| Shared.UpdatePlayer updatedPlayer )
 
 
 
@@ -89,8 +86,8 @@ update msg model =
 -- ###########################################
 
 
-view : Model -> View Msg
-view model =
+view : Player -> Model -> View Msg
+view player model =
     { title = model.card.label
     , body =
         Theme.container [] <|
@@ -106,7 +103,7 @@ view model =
                     ]
                 , row [ spacingXY 20 0, width fill ]
                     [ h2 [ padding 0 ] <| text "XP"
-                    , RoleCard.displayXpSlots (Player.progressOf model.card.role model.player)
+                    , RoleCard.displayXpSlots (Player.progressOf model.card.role player)
                     ]
                 ]
     }

@@ -1,4 +1,4 @@
-module Pages.User exposing (Model, Msg, page)
+module Pages.Player exposing (Model, Msg, page)
 
 import Color.Dracula
 import Core.Player as Player exposing (Player)
@@ -20,9 +20,9 @@ import View exposing (View)
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
 page shared _ =
     Page.advanced
-        { init = init shared
-        , update = update
-        , view = view
+        { init = init
+        , update = update shared.player
+        , view = view shared.player
         , subscriptions = subscriptions
         }
 
@@ -32,12 +32,12 @@ page shared _ =
 
 
 type alias Model =
-    { player : Player }
+    {}
 
 
-init : Shared.Model -> ( Model, Effect Msg )
-init shared =
-    ( { player = shared.player }, Effect.none )
+init : ( Model, Effect Msg )
+init =
+    ( {}, Effect.none )
 
 
 
@@ -48,15 +48,15 @@ type Msg
     = NameChanged String
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Player -> Msg -> Model -> ( Model, Effect Msg )
+update player msg _ =
     case msg of
         NameChanged name ->
             let
-                updatedPlayer = Player.withName name model.player
+                updatedPlayer =
+                    Player.withName name player
             in
-            
-            ( { model | player = updatedPlayer }, Effect.fromShared <| Shared.UpdatePlayer updatedPlayer )
+            ( {}, Effect.fromShared <| Shared.UpdatePlayer updatedPlayer )
 
 
 
@@ -72,14 +72,14 @@ subscriptions _ =
 -- VIEW
 
 
-view : Model -> View Msg
-view model =
+view : Player -> Model -> View Msg
+view player _ =
     { title = "User"
     , body =
         UI.Theme.container [] <|
             column [ centerX, spacing 20 ]
                 [ UI.Theme.card []
-                    { icon = el [Element.Font.size 60, centerX] <| text <| String.fromChar model.player.icon
+                    { icon = el [ Element.Font.size 60, centerX ] <| text <| String.fromChar player.icon
                     , color = Color.Dracula.green
                     , size = Big
                     , main =
@@ -94,14 +94,14 @@ view model =
                                 , Element.Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
                                 ]
                                 { onChange = NameChanged
-                                , text = model.player.name
+                                , text = player.name
                                 , placeholder = Nothing
                                 , label = Element.Input.labelHidden "Your name"
                                 }
-                    , sub = text <| (String.fromInt <| Player.numberOfBadgesWon model.player) ++ " badges"
+                    , sub = text <| (String.fromInt <| Player.numberOfBadgesWon player) ++ " badges"
                     }
                 , wrappedRow [ spacing 10, centerX ]
-                    (Player.badgesWon model.player
+                    (Player.badgesWon player
                         |> List.map (Core.RoleCard.view Badge)
                     )
                 ]

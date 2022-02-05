@@ -72,7 +72,7 @@ navigation =
             [ navLink [ Border.widthEach { emptySides | left = 1, right = 1 } ]
                 { route = Route.Home_, icon = Icon.comedyMasks }
             , navLink [] { route = Route.Team, icon = Icon.ribbon }
-            , navLink [] { route = Route.User, icon = Icon.person }
+            , navLink [] { route = Route.Player, icon = Icon.person }
             ]
 
 

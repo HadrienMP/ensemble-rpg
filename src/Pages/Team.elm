@@ -1,12 +1,11 @@
-module Pages.Team exposing (Model, Msg, page)
+module Pages.Team exposing (page)
 
 import Color.Dracula
 import Core.Player as Player exposing (Player)
 import Core.RoleCard as RoleCard exposing (DisplayMode(..))
 import Element exposing (column, row, spacing, spacingXY, text, wrappedRow)
-import Gen.Params.Team exposing (Params)
-import Page
-import Request
+import Page exposing (Page)
+import Request exposing (Request)
 import Shared
 import UI.Theme exposing (CardSize(..), container)
 import View exposing (View)
@@ -14,74 +13,32 @@ import Element exposing (..)
 import Element.Font as Font
 
 
-page : Shared.Model -> Request.With Params -> Page.With Model Msg
+page : Shared.Model -> Request -> Page
 page shared _ =
-    Page.element
-        { init = init shared
-        , update = update
-        , view = view
-        , subscriptions = subscriptions
-        }
+    Page.static { view = view shared.player }
 
-
-
--- INIT
-
-
-type alias Model =
-    { player : Player
-    }
-
-
-init : Shared.Model -> ( Model, Cmd Msg )
-init model =
-    ( { player = model.player }, Cmd.none )
-
-
-
--- UPDATE
-
-
-type Msg
-    = ReplaceMe
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ReplaceMe ->
-            ( model, Cmd.none )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
 
 
 
 -- VIEW
 
 
-view : Model -> View Msg
-view model =
+view : Player -> View msg
+view player =
     { title = "Team"
     , body =
         container [] <|
             column [ spacingXY 0 20 ]
                 [ row [ spacing 10 ]
                     [ UI.Theme.card []
-                        { icon = el [Font.size 30, centerX] <| text <| String.fromChar model.player.icon
+                        { icon = el [Font.size 30, centerX] <| text <| String.fromChar player.icon
                         , color = Color.Dracula.green
                         , size = Small
-                        , main = text model.player.name
-                        , sub = text <| (String.fromInt <| Player.numberOfBadgesWon model.player) ++ " badges"
+                        , main = text player.name
+                        , sub = text <| (String.fromInt <| Player.numberOfBadgesWon player) ++ " badges"
                         }
                     , wrappedRow [ spacing 10, width fill ]
-                        (Player.badgesWon model.player
+                        (Player.badgesWon player
                             |> List.map (RoleCard.view Badge)
                         )
                     ]
