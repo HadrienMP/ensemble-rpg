@@ -41,6 +41,10 @@ fromIdentity id identity =
     , xp = Dict.empty
     }
 
+reset : Player -> Player
+reset player =
+    {player | completedRoles = Dict.empty, xp = Dict.empty}
+
 unknown : Player
 unknown =
     Player PlayerId.empty unknownIdentity Dict.empty Dict.empty

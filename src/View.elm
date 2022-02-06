@@ -5,6 +5,7 @@ import Color.Dracula
 import Element exposing (..)
 import Element.Background as Background
 import UI.Theme
+import Core.Profiles
 
 
 type alias View msg =
@@ -16,7 +17,7 @@ type alias View msg =
 placeholder : String -> View msg
 placeholder str =
     { title = str
-    , body = UI.Theme.container [] <| Element.text str
+    , body = UI.Theme.container Core.Profiles.Player [] <| Element.text str
     }
 
 

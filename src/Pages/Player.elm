@@ -1,7 +1,7 @@
 module Pages.Player exposing (Model, Msg, page)
 
 import Color.Dracula
-import Core.Player as Player exposing (Event(..), Player)
+import Core.Player as Player exposing (Event(..))
 import Core.RoleCard exposing (DisplayMode(..))
 import Effect exposing (Effect)
 import Element exposing (centerX, column, el, paddingEach, paddingXY, px, spacing, text, width, wrappedRow)
@@ -21,8 +21,8 @@ page : Shared.Model -> Request.With Params -> Page.With Model Msg
 page shared _ =
     Page.advanced
         { init = init
-        , update = update shared.player
-        , view = view shared.player
+        , update = update shared
+        , view = view shared
         , subscriptions = subscriptions
         }
 
@@ -48,8 +48,8 @@ type Msg
     = NameChanged String
 
 
-update : Player -> Msg -> Model -> ( Model, Effect Msg )
-update player msg _ =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update { player } msg _ =
     let
         identity =
             player.identity
@@ -76,15 +76,15 @@ subscriptions _ =
 -- VIEW
 
 
-view : Player -> Model -> View Msg
-view player _ =
+view : Shared.Model -> Model -> View Msg
+view { player, profile } _ =
     { title = "User"
     , body =
         let
             identity =
                 player.identity
         in
-        UI.Theme.container [] <|
+        UI.Theme.container profile [] <|
             column [ centerX, spacing 20 ]
                 [ UI.Theme.card []
                     { icon = el [ Element.Font.size 60, centerX ] <| text <| String.fromChar identity.icon

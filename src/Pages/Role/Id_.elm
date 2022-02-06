@@ -1,7 +1,7 @@
 module Pages.Role.Id_ exposing (Model, Msg, page)
 
 import Color.Dracula
-import Core.Player as Player exposing (Player)
+import Core.Player as Player
 import Core.Role
 import Core.RoleCard as RoleCard exposing (Behaviour, RoleCard)
 import Core.XpProgress
@@ -24,8 +24,8 @@ page : Shared.Model -> Request.With Params -> Page.With Model Msg
 page shared req =
     Page.advanced
         { init = init req
-        , update = update shared.player
-        , view = view shared.player
+        , update = update shared
+        , view = view shared
         , subscriptions = subscriptions
         }
 
@@ -70,8 +70,8 @@ init req =
 -- ###########################################
 
 
-update : Player -> Msg -> Model -> ( Model, Effect Msg )
-update player msg model =
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
+update { player } msg model =
     case msg of
         GainXp ->
             ( model
@@ -87,11 +87,11 @@ update player msg model =
 -- ###########################################
 
 
-view : Player -> Model -> View Msg
-view player model =
+view : Shared.Model -> Model -> View Msg
+view { player, profile } model =
     { title = model.card.label
     , body =
-        Theme.container [] <|
+        Theme.container profile [] <|
             column [ spacing 40, width fill ]
                 [ row
                     [ spacingXY 20 0 ]

@@ -26,7 +26,7 @@ view : Shared.Model -> View msg
 view model =
     { title = "Team"
     , body =
-        container [] <|
+        container model.profile [] <|
             column [ spacingXY 0 10 ]
                 (Shared.allPlayers model |> List.map displayPlayer)
     }

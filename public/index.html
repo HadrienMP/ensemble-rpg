@@ -15,17 +15,17 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/dist/elm.js"></script>
   <script>
-    const jsonPlayer = window.localStorage.getItem("player")
-    const player = jsonPlayer ? JSON.parse(jsonPlayer) : undefined
-    const app = Elm.Main.init({ flags: player })
+    const jsonStorage = window.localStorage.getItem("storage")
+    const app = Elm.Main.init({
+      flags: {
+        storage: jsonStorage,
+        admin: window.location.search.includes('admin')
+      }
+    });
 
     var socket = io();
     app.ports.ready.subscribe(() => {
       socket.emit('join', 'the-only-room');
-    });
-    socket.on('reset', () => {
-      console.log('reset');
-      window.location.reload();
     });
     let reconnectionInterval;
     socket.on("connect", () => {
@@ -43,7 +43,7 @@
       socket.emit('message', 'the-only-room', event);
     });
     socket.on('message', data => {
-      console.log('message', data);
+      console.log('message in', data);
       app.ports.receiveOne.send(data);
     });
     socket.on('history', data => {
@@ -54,8 +54,8 @@
     // ----------------------------
     // Storage
     // ----------------------------
-    app.ports.savePlayerIdentity.subscribe(player => {
-      window.localStorage.setItem("player", JSON.stringify(player));
+    app.ports.saveInStorage.subscribe(storage => {
+      window.localStorage.setItem("storage", JSON.stringify(storage));
     });
 
   </script>

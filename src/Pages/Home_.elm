@@ -26,7 +26,7 @@ view : Shared.Model -> View msg
 view shared =
     { title = "Homepage"
     , body =
-        UI.Theme.container [] <| roleCardsView shared
+        UI.Theme.container shared.profile [] <| roleCardsView shared
     }
 
 

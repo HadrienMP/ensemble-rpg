@@ -1,6 +1,7 @@
 module UI.Theme exposing (..)
 
 import Color.Dracula
+import Core.Profiles
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -16,10 +17,10 @@ maxWidthBody =
     800
 
 
-container : List (Attribute msg) -> Element msg -> Element msg
-container attr children =
+container : Core.Profiles.Profile -> List (Attribute msg) -> Element msg -> Element msg
+container profile attr children =
     el
-        ([ inFront navigation
+        ([ inFront <| navigation profile
          , behindContent header
          , Font.color Color.Dracula.white
          , Font.size 14
@@ -53,8 +54,8 @@ header =
         text "Ensemble"
 
 
-navigation : Element msg
-navigation =
+navigation : Core.Profiles.Profile -> Element msg
+navigation profile =
     el
         [ Region.navigation
         , Background.color Color.Dracula.blue
@@ -69,11 +70,23 @@ navigation =
         ]
     <|
         row [ width <| maximum maxWidthBody <| fill, centerX ]
-            [ navLink [ Border.widthEach { emptySides | left = 1, right = 1 } ]
+            ([ navLink [ Border.widthEach { emptySides | left = 1, right = 1 } ]
                 { route = Route.Home_, icon = Icon.comedyMasks }
-            , navLink [] { route = Route.Team, icon = Icon.ribbon }
-            , navLink [] { route = Route.Player, icon = Icon.person }
-            ]
+             , navLink [] { route = Route.Team, icon = Icon.ribbon }
+             , navLink [] { route = Route.Player, icon = Icon.person }
+             ]
+                ++ adminLink profile
+            )
+
+
+adminLink : Core.Profiles.Profile -> List (Element msg)
+adminLink profile =
+    case profile of
+        Core.Profiles.Admin ->
+            [ navLink [] { route = Route.Admin, icon = Icon.key } ]
+
+        _ ->
+            []
 
 
 navLink : List (Attribute msg) -> { route : Route.Route, icon : Element msg } -> Element msg

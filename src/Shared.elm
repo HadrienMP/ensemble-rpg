@@ -3,6 +3,7 @@ module Shared exposing
     , Model
     , Msg(..)
     , allPlayers
+    , empty
     , init
     , subscriptions
     , update
@@ -11,6 +12,7 @@ module Shared exposing
 import AssocList as Dict exposing (Dict)
 import Core.Player as Player exposing (Player)
 import Core.PlayerId exposing (PlayerId)
+import Core.Profiles
 import Js.Events exposing (Event)
 import Js.Storage
 import Json.Decode as Json
@@ -20,12 +22,15 @@ import Request exposing (Request)
 
 
 type alias Flags =
-    Json.Value
+    { storage : String
+    , admin : Bool
+    }
 
 
 type alias Model =
     { player : Player
     , players : Dict PlayerId Player
+    , profile : Core.Profiles.Profile
     }
 
 
@@ -41,21 +46,35 @@ type Msg
     | GotHistory (Result Json.Error (List Js.Events.Event))
 
 
+empty : Model
+empty =
+    { players = Dict.empty, player = Player.unknown, profile = Core.Profiles.Player }
+
+
 init : Request -> Flags -> ( Model, Cmd Msg )
 init _ flags =
     let
         savedPlayer =
-            Json.decodeValue Js.Storage.decoder flags
-                |> Result.toMaybe
+            flags.storage
+                |> Js.Storage.fromString
+                |> .player
     in
     case savedPlayer of
         Nothing ->
-            ( { players = Dict.empty, player = Player.unknown }
+            ( { players = Dict.empty
+              , player = Player.unknown
+              , profile = Core.Profiles.fromAdminBool flags.admin
+              }
             , Random.generate CreatedPlayer Player.generator
             )
 
-        Just (id, identity) ->
-            ( { players = Dict.empty, player = Player.fromIdentity id identity }, Js.Events.ready () )
+        Just player ->
+            ( { players = Dict.empty
+              , player = Player.fromIdentity player.id player.identity
+              , profile = Core.Profiles.fromAdminBool flags.admin
+              }
+            , Js.Events.ready ()
+            )
 
 
 update : Request -> Msg -> Model -> ( Model, Cmd Msg )
@@ -63,14 +82,14 @@ update _ msg model =
     case msg of
         PlayerEvent playerId event ->
             ( { model | player = Player.evolve event model.player }
-            , Js.Events.publish <| Js.Events.Event playerId event
+            , Js.Events.publish <| Js.Events.PlayerEvent playerId event
             )
 
         CreatedPlayer { player, event } ->
             ( { model | player = player }
             , Cmd.batch
-                [ Js.Storage.save player.id player.identity
-                , Js.Events.publish <| Js.Events.Event player.id event
+                [ Js.Storage.persist { player = Just { id = player.id, identity = player.identity } }
+                , Js.Events.publish <| Js.Events.PlayerEvent player.id event
                 , Js.Events.ready ()
                 ]
             )
@@ -101,17 +120,22 @@ evolveMany model events =
 
 
 evolve : Model -> Event -> Model
-evolve model { playerId, playerEvent } =
-    if playerId == model.player.id then
-        { model | player = Player.evolve playerEvent model.player }
+evolve model event =
+    case event of
+        Js.Events.PlayerEvent playerId playerEvent ->
+            if playerId == model.player.id then
+                { model | player = Player.evolve playerEvent model.player }
 
-    else
-        { model
-            | players =
-                Dict.update playerId
-                    (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent |> Just)
-                    model.players
-        }
+            else
+                { model
+                    | players =
+                        Dict.update playerId
+                            (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent |> Just)
+                            model.players
+                }
+
+        Js.Events.Reset ->
+            { model | player = Player.reset model.player, players = Dict.empty }
 
 
 subscriptions : Request -> Model -> Sub Msg
