@@ -73,7 +73,10 @@ init _ flags =
               , player = Player.fromIdentity player.id player.identity
               , profile = Core.Profiles.fromAdminBool flags.admin
               }
-            , Js.Events.ready ()
+            , Cmd.batch
+                [ Js.Events.publish <| Js.Events.PlayerEvent player.id <| Player.ChangedIdentity player.identity
+                , Js.Events.ready ()
+                ]
             )
 
 
