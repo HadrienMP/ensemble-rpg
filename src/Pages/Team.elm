@@ -1,17 +1,17 @@
 module Pages.Team exposing (page)
 
+import AssocList as Dict
 import Color.Dracula
-import Core.RoleCard as RoleCard exposing (DisplayMode(..))
 import Core.Player exposing (Player)
+import Core.RoleCard as RoleCard exposing (DisplayMode(..))
 import Element exposing (..)
 import Element.Font as Font
+import Gen.Route
 import Page exposing (Page)
 import Request exposing (Request)
 import Shared
-import UI.Theme exposing (CardSize(..), container)
+import UI.Theme exposing (CardSize(..), container, h1, h2)
 import View exposing (View)
-import AssocList as Dict
-import Gen.Route
 
 
 page : Shared.Model -> Request -> Page
@@ -29,7 +29,14 @@ view model =
     , body =
         container { profile = model.profile, currentRoute = Just Gen.Route.Team } [] <|
             column [ spacingXY 0 10 ]
-                (Shared.allPlayers model |> List.map displayPlayer)
+                ((h2 [] <|
+                    row [spacingXY 10 0]
+                        [ text "Team Score:"
+                        , el [Font.bold] <| text <| (String.fromInt <| Shared.score model) ++ " badges"
+                        ]
+                 )
+                    :: (Shared.allPlayers model |> List.map displayPlayer)
+                )
     }
 
 

@@ -7,6 +7,7 @@ module Shared exposing
     , init
     , subscriptions
     , update
+    , score
     )
 
 import AssocList as Dict exposing (Dict)
@@ -48,7 +49,10 @@ type Msg
 
 empty : Model
 empty =
-    { players = Dict.empty, player = Player.unknown, profile = Core.Profiles.Player }
+    { players = Dict.empty
+    , player = Player.unknown
+    , profile = Core.Profiles.Player
+    }
 
 
 init : Request -> Flags -> ( Model, Cmd Msg )
@@ -111,6 +115,12 @@ update _ msg model =
             , Cmd.none
             )
 
+score : Model -> Int
+score model =
+    Dict.values model.players
+    |> (::) model.player
+    |> List.map (.completedRoles >> Dict.size)
+    |> List.sum
 
 evolveMany : Model -> List Event -> Model
 evolveMany model events =
@@ -127,7 +137,7 @@ evolve model event =
     case event of
         Js.Events.PlayerEvent playerId playerEvent ->
             if playerId == model.player.id then
-                { model | player = Player.evolve playerEvent model.player}
+                { model | player = Player.evolve playerEvent model.player }
 
             else
                 { model
