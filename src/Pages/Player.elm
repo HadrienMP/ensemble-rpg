@@ -9,15 +9,14 @@ import Element.Background
 import Element.Border
 import Element.Font
 import Element.Input
-import Gen.Params.User exposing (Params)
 import Page
-import Request
+import Request exposing (Request)
 import Shared
 import UI.Theme exposing (CardSize(..), emptySides, transparent)
 import View exposing (View)
 
 
-page : Shared.Model -> Request.With Params -> Page.With Model Msg
+page : Shared.Model -> Request -> Page.With Model Msg
 page shared _ =
     Page.advanced
         { init = init
