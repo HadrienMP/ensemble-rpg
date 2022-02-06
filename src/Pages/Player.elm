@@ -1,7 +1,7 @@
 module Pages.Player exposing (Model, Msg, page)
 
 import Color.Dracula
-import Core.Player as Player exposing (Player)
+import Core.Player as Player exposing (Event(..), Player)
 import Core.RoleCard exposing (DisplayMode(..))
 import Effect exposing (Effect)
 import Element exposing (centerX, column, el, paddingEach, paddingXY, px, spacing, text, width, wrappedRow)
@@ -50,13 +50,17 @@ type Msg
 
 update : Player -> Msg -> Model -> ( Model, Effect Msg )
 update player msg _ =
+    let
+        identity =
+            player.identity
+    in
     case msg of
         NameChanged name ->
-            let
-                updatedPlayer =
-                    Player.withName name player
-            in
-            ( {}, Effect.fromShared <| Shared.UpdatePlayer updatedPlayer )
+            ( {}
+            , ChangedIdentity { identity | name = name }
+                |> Shared.PlayerEvent player.id
+                |> Effect.fromShared
+            )
 
 
 
@@ -76,10 +80,14 @@ view : Player -> Model -> View Msg
 view player _ =
     { title = "User"
     , body =
+        let
+            identity =
+                player.identity
+        in
         UI.Theme.container [] <|
             column [ centerX, spacing 20 ]
                 [ UI.Theme.card []
-                    { icon = el [ Element.Font.size 60, centerX ] <| text <| String.fromChar player.icon
+                    { icon = el [ Element.Font.size 60, centerX ] <| text <| String.fromChar identity.icon
                     , color = Color.Dracula.green
                     , size = Big
                     , main =
@@ -94,7 +102,7 @@ view player _ =
                                 , Element.Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
                                 ]
                                 { onChange = NameChanged
-                                , text = player.name
+                                , text = identity.name
                                 , placeholder = Nothing
                                 , label = Element.Input.labelHidden "Your name"
                                 }

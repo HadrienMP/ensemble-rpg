@@ -4,6 +4,7 @@ import Color.Dracula
 import Core.Player as Player exposing (Player)
 import Core.Role
 import Core.RoleCard as RoleCard exposing (Behaviour, RoleCard)
+import Core.XpProgress
 import Effect exposing (Effect)
 import Element exposing (..)
 import Element.Background as Background
@@ -73,11 +74,11 @@ update : Player -> Msg -> Model -> ( Model, Effect Msg )
 update player msg model =
     case msg of
         GainXp ->
-            let
-                updatedPlayer =
-                    Player.gainXp model.card.role player
-            in
-            ( model , Effect.fromShared <| Shared.UpdatePlayer updatedPlayer )
+            ( model
+            , Player.DisplayedBehaviour model.card.role
+                |> Shared.PlayerEvent player.id
+                |> Effect.fromShared
+            )
 
 
 
@@ -103,7 +104,7 @@ view player model =
                     ]
                 , row [ spacingXY 20 0, width fill ]
                     [ h2 [ padding 0 ] <| text "XP"
-                    , RoleCard.displayXpSlots (Player.progressOf model.card.role player)
+                    , Core.XpProgress.displayXpSlots (Player.progressOf model.card.role player)
                     ]
                 ]
     }

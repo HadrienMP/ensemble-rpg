@@ -20,6 +20,9 @@
     app.ports.publishEvent.subscribe(event => {
       socket.emit('message', 'the-only-room', event);
     });
+    app.ports.savePlayerIdentity.subscribe(player => {
+      window.localStorage.setItem(player.id, JSON.stringify(player));
+    });
     socket.on('message', data => {
       console.log('message', data);
       app.ports.receiveOne.send(data);

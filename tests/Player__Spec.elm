@@ -72,10 +72,10 @@ suite =
 
 completeRole : Core.Role.Role -> Player -> Player
 completeRole role =
-    Core.Player.gainXp role
-        >> Core.Player.gainXp role
-        >> Core.Player.gainXp role
-        >> Core.Player.gainXp role
+    Core.Player.displayedBeheviour role
+        >> Core.Player.displayedBeheviour role
+        >> Core.Player.displayedBeheviour role
+        >> Core.Player.displayedBeheviour role
 
 
 joinGame : Player

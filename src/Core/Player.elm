@@ -7,53 +7,137 @@ import Core.PlayerName
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
 import Core.XpProgress exposing (XpProgress, completed)
-import Js.DecoderExtra
+import Js.DecoderExtra exposing (firstCharDecoder)
 import Json.Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode.Pipeline exposing (required, requiredAt)
 import Json.Encode
 import Random
 import Random.Char
 
 
+type alias PlayerIdentity =
+    { icon : Char
+    , name : String
+    }
+
+
+type Event
+    = ChangedIdentity PlayerIdentity
+    | DisplayedBehaviour Role
+
+
 type alias Player =
     { id : PlayerId
-    , name : String
-    , icon : Char
-    , xp : Dict Role Int
+    , identity : PlayerIdentity
+    , completedRoles : List Role
+    , xp : Dict Role XpProgress
     }
 
 
 unknown : Player
 unknown =
-    Player PlayerId.empty [ChangedIdentity {icon}]
+    Player PlayerId.empty unknownIdentity [] Dict.empty
+
+
+unknownIdentity : PlayerIdentity
+unknownIdentity =
+    { icon = 'U', name = "Unknown" }
+
+
+evolve : Event -> Player -> Player
+evolve event player =
+    case event of
+        ChangedIdentity identity ->
+            { player | identity = identity }
+
+        DisplayedBehaviour role ->
+            let
+                progress =
+                    Dict.get role player.xp |> Maybe.withDefault (Core.XpProgress.empty role) |> Core.XpProgress.increment
+            in
+            { player
+                | xp = Dict.insert role progress player.xp
+                , completedRoles =
+                    if Core.XpProgress.completed progress then
+                        role :: player.completedRoles
+
+                    else
+                        player.completedRoles
+            }
+
+
+encodeIdentity : PlayerIdentity -> Json.Encode.Value
+encodeIdentity identity =
+    Json.Encode.object
+        [ ( "icon", Json.Encode.string <| String.fromChar identity.icon )
+        , ( "name", Json.Encode.string identity.name )
+        ]
+
+identityDecoder : Json.Decode.Decoder PlayerIdentity
+identityDecoder =
+    Json.Decode.succeed PlayerIdentity
+    |> required "icon" firstCharDecoder
+    |> required "name" Json.Decode.string
 
 
 
 -- Json
+-- encode : Player -> Json.Encode.Value
+-- encode player =
+--     Json.Encode.object
+--         [ ( "id", PlayerId.encode player.id )
+--         , ( "events", Json.Encode.list encodeEvent player.events )
+--         ]
 
 
-encode : Player -> Json.Encode.Value
-encode player =
-    Json.Encode.object
-        [ ( "id", PlayerId.encode player.id )
-        , ( "name", Json.Encode.string player.name )
-        , ( "icon", Json.Encode.string (String.fromChar player.icon) )
-        , ( "xp"
-          , player.xp
-                |> Dict.toList
-                |> List.map (\( role, x ) -> [ ( "role", RoleCard.encode role ), ( "xp", Json.Encode.int x ) ])
-                |> Json.Encode.list Json.Encode.object
-          )
-        ]
+encodeEvent : Event -> Json.Encode.Value
+encodeEvent event =
+    case event of
+        ChangedIdentity identity ->
+            Json.Encode.object
+                [ ( "type", Json.Encode.string "ChangedIdentity" )
+                , ( "data"
+                  , Json.Encode.object
+                        [ ( "icon", Json.Encode.string <| String.fromChar identity.icon )
+                        , ( "name", Json.Encode.string identity.name )
+                        ]
+                  )
+                ]
+
+        DisplayedBehaviour role ->
+            Json.Encode.object
+                [ ( "type", Json.Encode.string "DisplayedBehaviour" )
+                , ( "data", RoleCard.encode role )
+                ]
 
 
-decoder : Decoder Player
-decoder =
-    Json.Decode.succeed Player
-        |> required "id" PlayerId.decoder
-        |> required "name" Json.Decode.string
-        |> required "icon" Js.DecoderExtra.firstCharDecoder
-        |> required "xp" playerXpDecoder
+eventDecoder : Json.Decode.Decoder Event
+eventDecoder =
+    Json.Decode.field "type" Json.Decode.string
+        |> Json.Decode.andThen
+            (\eventName ->
+                case eventName of
+                    "ChangedIdentity" ->
+                        Json.Decode.succeed PlayerIdentity
+                            |> requiredAt [ "data", "icon" ] firstCharDecoder
+                            |> requiredAt [ "data", "name" ] Json.Decode.string
+                            |> Json.Decode.map ChangedIdentity
+
+                    "DisplayedBehaviour" ->
+                        Json.Decode.succeed DisplayedBehaviour
+                            |> required "data" RoleCard.decoder
+
+                    _ ->
+                        Json.Decode.fail <| "This is an unknown event: " ++ eventName
+            )
+
+
+
+-- decoder : Decoder Player
+-- decoder =
+-- Json.Decode.succeed Player
+-- |> required "id" PlayerId.decoder
+-- |> required "events" (Json.Decode.list eventDecoder)
 
 
 playerXpDecoder : Decoder (Dict Role Int)
@@ -69,43 +153,38 @@ playerXpDecoder =
 --
 
 
-generator : Random.Generator Player
+type alias Stuff =
+    { player : Player, event : Event }
+
+
+generator : Random.Generator Stuff
 generator =
-    Random.map3 (\a b c -> Player a b c Dict.empty)
+    Random.map2
+        (\id identityResult ->
+            { player =
+                { id = id
+                , identity = identityResult.identity
+                , completedRoles = []
+                , xp = Dict.empty
+                }
+            , event = identityResult.event
+            }
+        )
         PlayerId.generator
-        Core.PlayerName.generator
-        Random.Char.emoticon
+        playerIdentityGenerator
+
+
+playerIdentityGenerator : Random.Generator { identity : PlayerIdentity, event : Event }
+playerIdentityGenerator =
+    Random.map2 PlayerIdentity Random.Char.emoticon Core.PlayerName.generator
+        |> Random.map (\identity -> { identity = identity, event = ChangedIdentity identity })
 
 
 progressOf : Role -> Player -> XpProgress
-progressOf role player =
-    let
-        roleCard =
-            RoleCard.fromRole role
-    in
-    { current = Dict.get roleCard.role player.xp |> Maybe.withDefault 0
-    , max = roleCard.xpToComplete
-    , role = roleCard.role
-    }
-
-
-updateXp : Int -> Role -> Player -> Player
-updateXp xp role player =
-    { player | xp = Dict.insert role xp player.xp }
-
-
-gainXp : Role -> Player -> Player
-gainXp role player =
-    let
-        xp =
-            RoleCard.incXp (progressOf role player)
-    in
-    { player | xp = Dict.insert xp.role xp.current player.xp }
-
-
-withName : String -> Player -> Player
-withName name player =
-    { player | name = name }
+progressOf target player =
+    player.xp
+        |> Dict.get target
+        |> Maybe.withDefault (Core.XpProgress.empty target)
 
 
 numberOfBadgesWon : Player -> Int
@@ -115,11 +194,7 @@ numberOfBadgesWon player =
 
 completedRoleCards : Player -> List (RoleCard msg)
 completedRoleCards player =
-    player.xp
-        |> Dict.toList
-        |> List.map (Tuple.mapFirst RoleCard.fromRole)
-        |> List.filter (\( role, xp ) -> xp >= role.xpToComplete)
-        |> List.map Tuple.first
+    player.completedRoles |> List.map RoleCard.fromRole
 
 
 accessibleLevels : Player -> List Level

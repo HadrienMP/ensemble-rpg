@@ -1,8 +1,8 @@
 module Pages.Team exposing (page)
 
 import Color.Dracula
-import Core.OtherPlayer exposing (OtherPlayer)
 import Core.RoleCard as RoleCard exposing (DisplayMode(..))
+import Core.Player exposing (Player)
 import Element exposing (..)
 import Element.Font as Font
 import Page exposing (Page)
@@ -31,14 +31,14 @@ view model =
     }
 
 
-displayPlayer : OtherPlayer -> Element msg
+displayPlayer : Player -> Element msg
 displayPlayer player =
     row [ spacing 10, width fill ]
         [ UI.Theme.card []
-            { icon = el [ Font.size 30, centerX ] <| text <| String.fromChar player.icon
+            { icon = el [ Font.size 30, centerX ] <| text <| String.fromChar player.identity.icon
             , color = Color.Dracula.green
             , size = Small
-            , main = text player.name
+            , main = text player.identity.name
             , sub = text <| (String.fromInt <| List.length player.completedRoles) ++ " badges"
             }
         , wrappedRow [ spacing 10, width fill ]

@@ -5,7 +5,6 @@ import AssocList.Extra
 import Color.Dracula
 import Core.Level exposing (..)
 import Core.Role exposing (..)
-import Core.XpProgress exposing (XpProgress)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -43,11 +42,6 @@ type alias RoleCard msg =
     , longDescription : String
     , shortDescription : String
     }
-
-
-incXp : XpProgress -> XpProgress
-incXp progress =
-    { progress | current = min (progress.current + 1) progress.max }
 
 
 
@@ -314,45 +308,3 @@ colorOf level =
 
         Level4 ->
             Color.Dracula.red
-
-
-displayXpSlots : XpProgress -> Element msg
-displayXpSlots progress =
-    el
-        [ width fill
-        , Border.solid
-        , Border.width 1
-        , Border.color Color.Dracula.gray
-        , padding 6
-        , behindContent <| displayXp progress
-        , clipY
-        ]
-    <|
-        el [ centerX ] <|
-            text <|
-                String.fromInt progress.current
-                    ++ "/"
-                    ++ String.fromInt progress.max
-
-
-displayXp : XpProgress -> Element msg
-displayXp progress =
-    progress.max
-        |> List.range 1
-        |> List.map
-            (\xp ->
-                if xp <= progress.current then
-                    [ Background.color Color.Dracula.green
-                    , Border.shadow
-                        { offset = ( 0, 0 )
-                        , blur = 6
-                        , size = 3
-                        , color = Color.Dracula.green
-                        }
-                    ]
-
-                else
-                    []
-            )
-        |> List.map (\attr -> el (attr ++ [ width fill, height (px 25) ]) none)
-        |> row [ width fill ]
