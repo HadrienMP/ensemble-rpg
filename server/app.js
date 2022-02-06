@@ -8,7 +8,7 @@ const path = require('path');
 // Events
 // --------------------
 
-const history = {}
+let history = {}
 
 io.on('connection', (socket) => {
     socket.on('join', room => {
@@ -35,8 +35,12 @@ let publicDirPath = path.join(__dirname + "/../", 'public');
 app.use(express.static(publicDirPath));
 app.get('/', (req, res) => {
     res.sendFile(path.join(publicDirPath, "index.html"))
-}).get(/^\/(?!socket-io).*/, (req, res) => {
+}).get(/^\/(?!socket-io|api).*/, (req, res) => {
     res.sendFile(path.join(publicDirPath, "index.html"))
+}).get("/api/reset", (req, res) => {
+    history = {};
+    io.emit('reset');
+    res.sendStatus(200);
 })
 
 const port = process.env.PORT || 1234

@@ -23,8 +23,17 @@
     app.ports.ready.subscribe(() => {
       socket.emit('join', 'the-only-room');
     });
+    socket.on('reset', () => {
+      console.log('reset');
+      window.location.reload();
+    });
+    let reconnectionInterval;
+    socket.on("connect", () => {
+      clearInterval(reconnectionInterval);
+    });
     socket.on("disconnect", () => {
-      alert('you were disconnected from the room, try to refresh');
+      alert('you were disconnected from the room, we are trying to reconnect you');
+      reconnectionInterval = setInterval(() => io.connect(), 5000)
     });
 
     // -----------------------------

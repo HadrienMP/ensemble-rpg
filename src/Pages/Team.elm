@@ -10,7 +10,7 @@ import Request exposing (Request)
 import Shared
 import UI.Theme exposing (CardSize(..), container)
 import View exposing (View)
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 
 
 page : Shared.Model -> Request -> Page
