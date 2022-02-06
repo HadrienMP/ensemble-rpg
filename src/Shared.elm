@@ -36,7 +36,7 @@ allPlayers model =
 
 type Msg
     = PlayerEvent PlayerId Player.Event
-    | CreatedPlayer Player.Stuff
+    | CreatedPlayer Player.PlayerWithIdentityEvent
     | GotEvent (Result Json.Error Js.Events.Event)
     | GotHistory (Result Json.Error (List Js.Events.Event))
 

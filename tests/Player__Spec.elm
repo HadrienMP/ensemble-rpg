@@ -3,10 +3,9 @@ module Player__Spec exposing (..)
 import Core.Level exposing (Level(..))
 import Core.Player exposing (Player, accessibleLevels)
 import Core.Role
-import AssocList as Dict
 import Expect
 import Test exposing (..)
-import Core.PlayerId
+import Core.Player exposing (Event(..))
 
 
 suite : Test
@@ -71,17 +70,21 @@ suite =
 
 
 completeRole : Core.Role.Role -> Player -> Player
-completeRole role =
-    Core.Player.displayedBeheviour role
-        >> Core.Player.displayedBeheviour role
-        >> Core.Player.displayedBeheviour role
-        >> Core.Player.displayedBeheviour role
+completeRole role player =
+    List.repeat 4 (DisplayedBehaviour role)
+    |> evolveMany player
 
+
+evolveMany : Player -> List Event -> Player
+evolveMany model events =
+    case events of
+        [] ->
+            model
+
+        head :: tail ->
+            evolveMany (Core.Player.evolve head model) tail
 
 joinGame : Player
 joinGame =
-    { id = Core.PlayerId.empty
-    , name = "Jane"
-    , icon = 'c'
-    , xp = Dict.empty
-    }
+    Core.Player.unknown
+    |> Core.Player.evolve (ChangedIdentity { name = "Jane" , icon = 'J' })

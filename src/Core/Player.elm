@@ -8,7 +8,7 @@ import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
 import Core.XpProgress exposing (XpProgress, completed)
 import Js.DecoderExtra exposing (firstCharDecoder)
-import Json.Decode exposing (Decoder)
+import Json.Decode
 import Json.Decode.Pipeline exposing (required, requiredAt)
 import Json.Encode
 import Random
@@ -80,16 +80,6 @@ identityDecoder =
     |> required "name" Json.Decode.string
 
 
-
--- Json
--- encode : Player -> Json.Encode.Value
--- encode player =
---     Json.Encode.object
---         [ ( "id", PlayerId.encode player.id )
---         , ( "events", Json.Encode.list encodeEvent player.events )
---         ]
-
-
 encodeEvent : Event -> Json.Encode.Value
 encodeEvent event =
     case event of
@@ -133,31 +123,14 @@ eventDecoder =
 
 
 
--- decoder : Decoder Player
--- decoder =
--- Json.Decode.succeed Player
--- |> required "id" PlayerId.decoder
--- |> required "events" (Json.Decode.list eventDecoder)
-
-
-playerXpDecoder : Decoder (Dict Role Int)
-playerXpDecoder =
-    Json.Decode.succeed Tuple.pair
-        |> required "role" RoleCard.decoder
-        |> required "xp" Json.Decode.int
-        |> Json.Decode.list
-        |> Json.Decode.map Dict.fromList
-
-
-
 --
 
 
-type alias Stuff =
+type alias PlayerWithIdentityEvent =
     { player : Player, event : Event }
 
 
-generator : Random.Generator Stuff
+generator : Random.Generator PlayerWithIdentityEvent
 generator =
     Random.map2
         (\id identityResult ->
