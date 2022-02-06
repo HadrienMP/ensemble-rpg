@@ -124,7 +124,7 @@ evolve model event =
     case event of
         Js.Events.PlayerEvent playerId playerEvent ->
             if playerId == model.player.id then
-                { model | player = Player.evolve playerEvent model.player }
+                model
 
             else
                 { model
