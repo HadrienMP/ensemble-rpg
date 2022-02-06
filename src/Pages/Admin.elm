@@ -7,6 +7,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input exposing (button)
 import Gen.Params.Admin exposing (Params)
+import Gen.Route
 import Js.Events
 import Page
 import Request
@@ -75,7 +76,12 @@ view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = "Homepage"
     , body =
-        UI.Theme.container shared.profile [] <|
+        UI.Theme.container
+            { profile = shared.profile
+            , currentRoute = Just Gen.Route.Admin
+            }
+            []
+        <|
             column [ width fill ] [ resetButton model ]
     }
 

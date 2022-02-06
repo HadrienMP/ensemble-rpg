@@ -9,6 +9,7 @@ import Element.Background
 import Element.Border
 import Element.Font
 import Element.Input
+import Gen.Route
 import Page
 import Request exposing (Request)
 import Shared
@@ -62,7 +63,7 @@ update { player } msg _ =
             )
 
 
- 
+
 -- SUBSCRIPTIONS
 
 
@@ -83,7 +84,7 @@ view { player, profile } _ =
             identity =
                 player.identity
         in
-        UI.Theme.container profile [] <|
+        UI.Theme.container { profile = profile, currentRoute = Just Gen.Route.Player } [] <|
             column [ centerX, spacing 20 ]
                 [ UI.Theme.card []
                     { icon = el [ Element.Font.size 60, centerX ] <| text <| String.fromChar identity.icon

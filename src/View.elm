@@ -2,10 +2,10 @@ module View exposing (View, map, none, placeholder, toBrowserDocument)
 
 import Browser
 import Color.Dracula
+import Core.Profiles
 import Element exposing (..)
 import Element.Background as Background
 import UI.Theme
-import Core.Profiles
 
 
 type alias View msg =
@@ -17,7 +17,7 @@ type alias View msg =
 placeholder : String -> View msg
 placeholder str =
     { title = str
-    , body = UI.Theme.container Core.Profiles.Player [] <| Element.text str
+    , body = UI.Theme.container { profile = Core.Profiles.Player, currentRoute = Nothing } [] <| Element.text str
     }
 
 

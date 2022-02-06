@@ -11,6 +11,7 @@ import Shared
 import UI.Theme exposing (CardSize(..), container)
 import View exposing (View)
 import AssocList as Dict
+import Gen.Route
 
 
 page : Shared.Model -> Request -> Page
@@ -26,7 +27,7 @@ view : Shared.Model -> View msg
 view model =
     { title = "Team"
     , body =
-        container model.profile [] <|
+        container { profile = model.profile, currentRoute = Just Gen.Route.Team } [] <|
             column [ spacingXY 0 10 ]
                 (Shared.allPlayers model |> List.map displayPlayer)
     }

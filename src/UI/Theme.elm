@@ -17,10 +17,20 @@ maxWidthBody =
     800
 
 
-container : Core.Profiles.Profile -> List (Attribute msg) -> Element msg -> Element msg
-container profile attr children =
+type alias PageContext =
+    { profile : Core.Profiles.Profile
+    , currentRoute : Maybe Route.Route
+    }
+
+
+container :
+    PageContext
+    -> List (Attribute msg)
+    -> Element msg
+    -> Element msg
+container context attr children =
     el
-        ([ inFront <| navigation profile
+        ([ inFront <| navigation context
          , behindContent header
          , Font.color Color.Dracula.white
          , Font.size 14
@@ -54,8 +64,8 @@ header =
         text "Ensemble"
 
 
-navigation : Core.Profiles.Profile -> Element msg
-navigation profile =
+navigation : PageContext -> Element msg
+navigation context =
     el
         [ Region.navigation
         , Background.color Color.Dracula.blue
@@ -70,37 +80,49 @@ navigation profile =
         ]
     <|
         row [ width <| maximum maxWidthBody <| fill, centerX ]
-            ([ navLink [ Border.widthEach { emptySides | left = 1, right = 1 } ]
+            ([ navLink context [ Border.widthEach { emptySides | left = 1, right = 1 } ]
                 { route = Route.Home_, icon = Icon.comedyMasks }
-             , navLink [] { route = Route.Team, icon = Icon.ribbon }
-             , navLink [] { route = Route.Player, icon = Icon.person }
+             , navLink context [] { route = Route.Team, icon = Icon.ribbon }
+             , navLink context [] { route = Route.Player, icon = Icon.person }
              ]
-                ++ adminLink profile
+                ++ adminLink context
             )
 
 
-adminLink : Core.Profiles.Profile -> List (Element msg)
-adminLink profile =
-    case profile of
+adminLink : PageContext -> List (Element msg)
+adminLink context =
+    case context.profile of
         Core.Profiles.Admin ->
-            [ navLink [] { route = Route.Admin, icon = Icon.key } ]
+            [ navLink context [] { route = Route.Admin, icon = Icon.key } ]
 
         _ ->
             []
 
 
-navLink : List (Attribute msg) -> { route : Route.Route, icon : Element msg } -> Element msg
-navLink attributes description =
+navLink :
+    PageContext
+    -> List (Attribute msg)
+    -> { route : Route.Route, icon : Element msg }
+    -> Element msg
+navLink context attributes description =
     link
         ([ Border.solid
          , Border.color Color.Dracula.black
          , Border.widthEach { emptySides | right = 1 }
          , paddingXY 10 10
          , width fill
+         , Background.color <|
+            if context.currentRoute == Just description.route then
+                Color.Dracula.blue
+
+            else
+                Color.Dracula.blue |> darken 2
          ]
             ++ attributes
         )
-        { url = Route.toHref description.route, label = el [ width <| px 30, centerX ] description.icon }
+        { url = Route.toHref description.route
+        , label = el [ width <| px 30, centerX ] description.icon
+        }
 
 
 emptySides : { top : Int, left : Int, right : Int, bottom : Int }

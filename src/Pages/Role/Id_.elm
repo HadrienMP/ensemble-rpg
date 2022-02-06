@@ -91,7 +91,7 @@ view : Shared.Model -> Model -> View Msg
 view { player, profile } model =
     { title = model.card.label
     , body =
-        Theme.container profile [] <|
+        Theme.container { profile = profile, currentRoute = Just <| Gen.Route.Role__Id_ { id = model.card.id } } [] <|
             column [ spacing 40, width fill ]
                 [ row
                     [ spacingXY 20 0 ]
