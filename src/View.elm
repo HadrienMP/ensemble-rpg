@@ -35,7 +35,7 @@ map fn view =
 
 toBrowserDocument : View msg -> Browser.Document msg
 toBrowserDocument view =
-    { title = view.title
+    { title = view.title ++ " | Ensemble RPG"
     , body =
         [ layout [ Background.color Color.Dracula.black ] view.body
         ]
