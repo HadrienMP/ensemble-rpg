@@ -29,14 +29,21 @@ type Event
 type alias Player =
     { id : PlayerId
     , identity : PlayerIdentity
-    , completedRoles : List Role
+    , completedRoles : Dict Role ()
     , xp : Dict Role XpProgress
     }
 
+fromIdentity : PlayerId -> PlayerIdentity -> Player
+fromIdentity id identity =
+    { id = id
+    , identity = identity
+    , completedRoles = Dict.empty
+    , xp = Dict.empty
+    }
 
 unknown : Player
 unknown =
-    Player PlayerId.empty unknownIdentity [] Dict.empty
+    Player PlayerId.empty unknownIdentity Dict.empty Dict.empty
 
 
 unknownIdentity : PlayerIdentity
@@ -53,13 +60,13 @@ evolve event player =
         DisplayedBehaviour role ->
             let
                 progress =
-                    Dict.get role player.xp |> Maybe.withDefault (Core.XpProgress.empty role) |> Core.XpProgress.increment
+                    progressOf role player |> Core.XpProgress.increment
             in
             { player
                 | xp = Dict.insert role progress player.xp
                 , completedRoles =
                     if Core.XpProgress.completed progress then
-                        role :: player.completedRoles
+                        Dict.insert role () player.completedRoles
 
                     else
                         player.completedRoles
@@ -137,7 +144,7 @@ generator =
             { player =
                 { id = id
                 , identity = identityResult.identity
-                , completedRoles = []
+                , completedRoles = Dict.empty
                 , xp = Dict.empty
                 }
             , event = identityResult.event
@@ -167,7 +174,7 @@ numberOfBadgesWon player =
 
 completedRoleCards : Player -> List (RoleCard msg)
 completedRoleCards player =
-    player.completedRoles |> List.map RoleCard.fromRole
+    player.completedRoles |> Dict.keys |> List.map RoleCard.fromRole
 
 
 accessibleLevels : Player -> List Level

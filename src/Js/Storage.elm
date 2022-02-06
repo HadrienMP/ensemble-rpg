@@ -3,6 +3,8 @@ port module Js.Storage exposing (..)
 import Core.Player exposing (PlayerIdentity)
 import Core.PlayerId exposing (PlayerId)
 import Json.Encode
+import Json.Decode
+import Json.Decode.Pipeline exposing (required)
 
 
 port savePlayerIdentity : Json.Encode.Value -> Cmd msg
@@ -15,3 +17,9 @@ save id identity =
         , ( "identity", Core.Player.encodeIdentity identity )
         ]
         |> savePlayerIdentity
+
+decoder : Json.Decode.Decoder (PlayerId, PlayerIdentity)
+decoder =
+    Json.Decode.succeed Tuple.pair
+    |> required "id" Core.PlayerId.decoder
+    |> required "identity" Core.Player.identityDecoder

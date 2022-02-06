@@ -42,10 +42,20 @@ type Msg
 
 
 init : Request -> Flags -> ( Model, Cmd Msg )
-init _ _ =
-    ( { players = Dict.empty, player = Player.unknown }
-    , Random.generate CreatedPlayer Player.generator
-    )
+init _ flags =
+    let
+        savedPlayer =
+            Json.decodeValue Js.Storage.decoder flags
+                |> Result.toMaybe
+    in
+    case savedPlayer of
+        Nothing ->
+            ( { players = Dict.empty, player = Player.unknown }
+            , Random.generate CreatedPlayer Player.generator
+            )
+
+        Just (id, identity) ->
+            ( { players = Dict.empty, player = Player.fromIdentity id identity }, Js.Events.ready () )
 
 
 update : Request -> Msg -> Model -> ( Model, Cmd Msg )
@@ -61,6 +71,7 @@ update _ msg model =
             , Cmd.batch
                 [ Js.Storage.save player.id player.identity
                 , Js.Events.publish <| Js.Events.Event player.id event
+                , Js.Events.ready ()
                 ]
             )
 
@@ -92,7 +103,7 @@ evolveMany model events =
 evolve : Model -> Event -> Model
 evolve model { playerId, playerEvent } =
     if playerId == model.player.id then
-        model
+        { model | player = Player.evolve playerEvent model.player }
 
     else
         { model

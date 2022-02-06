@@ -9,6 +9,8 @@ import Json.Encode
 import Test.Html.Event exposing (Event)
 
 
+port ready : () -> Cmd msg
+
 port publishEvent : Json.Encode.Value -> Cmd msg
 
 

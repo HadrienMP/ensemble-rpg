@@ -10,6 +10,7 @@ import Request exposing (Request)
 import Shared
 import UI.Theme exposing (CardSize(..), container)
 import View exposing (View)
+import AssocList as Dict exposing (Dict)
 
 
 page : Shared.Model -> Request -> Page
@@ -39,11 +40,10 @@ displayPlayer player =
             , color = Color.Dracula.green
             , size = Small
             , main = text player.identity.name
-            , sub = text <| (String.fromInt <| List.length player.completedRoles) ++ " badges"
+            , sub = text <| (String.fromInt <| Dict.size player.completedRoles) ++ " badges"
             }
         , wrappedRow [ spacing 10, width fill ]
-            (player.completedRoles
-                |> List.map RoleCard.fromRole
+            (Core.Player.completedRoleCards player
                 |> List.map (RoleCard.view Badge)
             )
         ]

@@ -15,13 +15,23 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/dist/elm.js"></script>
   <script>
-    const app = Elm.Main.init()
+    const jsonPlayer = window.localStorage.getItem("player")
+    const player = jsonPlayer ? JSON.parse(jsonPlayer) : undefined
+    const app = Elm.Main.init({ flags: player })
+
     var socket = io();
+    app.ports.ready.subscribe(() => {
+      socket.emit('join', 'the-only-room');
+    });
+    socket.on("disconnect", () => {
+      alert('you were disconnected from the room, try to refresh');
+    });
+
+    // -----------------------------
+    // Communication with peers
+    // -----------------------------
     app.ports.publishEvent.subscribe(event => {
       socket.emit('message', 'the-only-room', event);
-    });
-    app.ports.savePlayerIdentity.subscribe(player => {
-      window.localStorage.setItem(player.id, JSON.stringify(player));
     });
     socket.on('message', data => {
       console.log('message', data);
@@ -32,12 +42,13 @@
       app.ports.receiveHistory.send(data);
     });
 
-    socket.on('connect', () => {
-      socket.emit('join', 'the-only-room');
+    // ----------------------------
+    // Storage
+    // ----------------------------
+    app.ports.savePlayerIdentity.subscribe(player => {
+      window.localStorage.setItem("player", JSON.stringify(player));
     });
-    socket.on("disconnect", () => {
-      alert('you were disconnected from the room, try to refresh');
-    });
+
   </script>
 </body>
 
