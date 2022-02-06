@@ -25,7 +25,7 @@ type alias Player =
 
 unknown : Player
 unknown =
-    Player PlayerId.empty "" '😀' Dict.empty
+    Player PlayerId.empty [ChangedIdentity {icon}]
 
 
 
