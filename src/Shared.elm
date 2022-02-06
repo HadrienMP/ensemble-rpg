@@ -81,7 +81,7 @@ update : Request -> Msg -> Model -> ( Model, Cmd Msg )
 update _ msg model =
     case msg of
         PlayerEvent playerId event ->
-            ( { model | player = Player.evolve event model.player }
+            ( model
             , Js.Events.publish <| Js.Events.PlayerEvent playerId event
             )
 
@@ -124,7 +124,7 @@ evolve model event =
     case event of
         Js.Events.PlayerEvent playerId playerEvent ->
             if playerId == model.player.id then
-                model
+                { model | player = Player.evolve playerEvent model.player}
 
             else
                 { model

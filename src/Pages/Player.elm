@@ -56,13 +56,13 @@ update { player } msg _ =
     case msg of
         NameChanged name ->
             ( {}
-            , ChangedIdentity { identity | name = name }
+            , ChangedIdentity { identity | name = String.slice 0 10 name }
                 |> Shared.PlayerEvent player.id
                 |> Effect.fromShared
             )
 
 
-
+ 
 -- SUBSCRIPTIONS
 
 
