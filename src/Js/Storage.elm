@@ -6,6 +6,7 @@ import Json.Decode
 import Json.Decode.Pipeline exposing (optional)
 import Json.Encode
 import Json.Decode.Pipeline exposing (required)
+import Core.Player
 
 
 port saveInStorage : Json.Encode.Value -> Cmd msg
@@ -20,6 +21,10 @@ type alias StoragePlayer =
 type alias Storage =
     { player : Maybe StoragePlayer
     }
+
+saveIdentity : PlayerId -> PlayerIdentity -> Cmd msg
+saveIdentity id identity =
+    persist { player = Just { id = id, identity = identity } }
 
 
 persist : Storage -> Cmd msg

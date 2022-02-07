@@ -10,6 +10,7 @@ import Element.Border
 import Element.Font
 import Element.Input
 import Gen.Route
+import Js.Storage
 import Page
 import Request exposing (Request)
 import Shared
@@ -50,16 +51,23 @@ type Msg
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update { player } msg _ =
-    let
-        identity =
-            player.identity
-    in
     case msg of
         NameChanged name ->
+            let
+                identity =
+                    player.identity
+
+                updatedIdentity =
+                    { identity | name = String.slice 0 10 name }
+            in
             ( {}
-            , ChangedIdentity { identity | name = String.slice 0 10 name }
-                |> Shared.PlayerEvent player.id
-                |> Effect.fromShared
+            , Effect.batch
+                [ ChangedIdentity updatedIdentity
+                    |> Shared.PlayerEvent player.id
+                    |> Effect.fromShared
+                , Js.Storage.saveIdentity player.id updatedIdentity
+                    |> Effect.fromCmd
+                ]
             )
 
 
@@ -80,14 +88,10 @@ view : Shared.Model -> Model -> View Msg
 view { player, profile } _ =
     { title = "User"
     , body =
-        let
-            identity =
-                player.identity
-        in
         UI.Theme.container { profile = profile, currentRoute = Just Gen.Route.Player } [] <|
             column [ centerX, spacing 20 ]
                 [ UI.Theme.card []
-                    { icon = el [ Element.Font.size 60, centerX ] <| text <| String.fromChar identity.icon
+                    { icon = el [ Element.Font.size 60, centerX ] <| text <| String.fromChar player.identity.icon
                     , color = Color.Dracula.green
                     , size = Big
                     , main =
@@ -102,7 +106,7 @@ view { player, profile } _ =
                                 , Element.Font.shadow { offset = ( 1, 1 ), blur = 2, color = Color.Dracula.gray }
                                 ]
                                 { onChange = NameChanged
-                                , text = identity.name
+                                , text = player.identity.name
                                 , placeholder = Nothing
                                 , label = Element.Input.labelHidden "Your name"
                                 }

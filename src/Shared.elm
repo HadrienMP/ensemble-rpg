@@ -5,9 +5,9 @@ module Shared exposing
     , allPlayers
     , empty
     , init
+    , score
     , subscriptions
     , update
-    , score
     )
 
 import AssocList as Dict exposing (Dict)
@@ -95,7 +95,7 @@ update _ msg model =
         CreatedPlayer { player, event } ->
             ( { model | player = player }
             , Cmd.batch
-                [ Js.Storage.persist { player = Just { id = player.id, identity = player.identity } }
+                [ Js.Storage.saveIdentity player.id player.identity
                 , Js.Events.publish <| Js.Events.PlayerEvent player.id event
                 , Js.Events.ready ()
                 ]
@@ -110,26 +110,29 @@ update _ msg model =
 
         GotHistory result ->
             ( result
-                |> Result.map (evolveMany model)
+                |> Result.map (\events -> evolveMany events model)
                 |> Result.withDefault model
             , Cmd.none
             )
 
+
 score : Model -> Int
 score model =
     Dict.values model.players
-    |> (::) model.player
-    |> List.map (.completedRoles >> Dict.size)
-    |> List.sum
+        |> (::) model.player
+        |> List.map (.completedRoles >> Dict.size)
+        |> List.sum
 
-evolveMany : Model -> List Event -> Model
-evolveMany model events =
+
+evolveMany : List Event -> Model -> Model
+evolveMany events model =
     case events of
         [] ->
             model
 
         head :: tail ->
-            evolveMany (evolve model head) tail
+            evolve model head
+                |> evolveMany tail
 
 
 evolve : Model -> Event -> Model

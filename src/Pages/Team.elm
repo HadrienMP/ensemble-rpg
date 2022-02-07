@@ -10,7 +10,7 @@ import Gen.Route
 import Page exposing (Page)
 import Request exposing (Request)
 import Shared
-import UI.Theme exposing (CardSize(..), container, h1, h2)
+import UI.Theme exposing (CardSize(..), container, h2)
 import View exposing (View)
 
 
