@@ -1,28 +1,13 @@
-# my new project
+# Ensemble RPG
 > 🌳  built with [elm-spa](https://elm-spa.dev)
 
-## dependencies
+# Install
+This app is in Elm for the front end and uses express for the server, it uses npm as a package manager.
 
-This project requires the latest LTS version of [Node.js](https://nodejs.org/)
+To install it simply run `npm install`
 
-```bash
-npm install -g elm elm-spa
-```
+# Dev run
+Once you have installed the app you can launch it via `npm run dev`. It will compile the front end and hot reload the server when necessary.
 
-## running locally
-
-```bash
-elm-spa server  # starts this app at http:/localhost:1234
-```
-
-### other commands
-
-```bash
-elm-spa add    # add a new page to the application
-elm-spa build  # production build
-elm-spa watch  # runs build as you code (without the server)
-```
-
-## learn more
-
-You can learn more at [elm-spa.dev](https://elm-spa.dev)
+# Tests
+There is only a few Elm tests for now. You can launch them via `npm run test`
