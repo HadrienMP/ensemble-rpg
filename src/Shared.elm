@@ -20,6 +20,7 @@ import Json.Decode as Json
 import List exposing (head)
 import Random
 import Request exposing (Request)
+import Gen.Route
 
 
 type alias Flags =
@@ -85,7 +86,7 @@ init _ flags =
 
 
 update : Request -> Msg -> Model -> ( Model, Cmd Msg )
-update _ msg model =
+update req msg model =
     case msg of
         PlayerEvent playerId event ->
             ( model
@@ -102,15 +103,13 @@ update _ msg model =
             )
 
         GotEvent result ->
-            ( result
-                |> Result.map (evolve model)
-                |> Result.withDefault model
-            , Cmd.none
-            )
+            result
+                |> Result.map (evolve model req)
+                |> Result.withDefault ( model, Cmd.none )
 
         GotHistory result ->
             ( result
-                |> Result.map (\events -> evolveMany events model)
+                |> Result.map (\events -> evolveMany events req model)
                 |> Result.withDefault model
             , Cmd.none
             )
@@ -124,34 +123,53 @@ score model =
         |> List.sum
 
 
-evolveMany : List Event -> Model -> Model
-evolveMany events model =
+evolveMany : List Event -> Request -> Model -> Model
+evolveMany events req model =
     case events of
         [] ->
             model
 
         head :: tail ->
-            evolve model head
-                |> evolveMany tail
+            evolve model req head
+                |> Tuple.first
+                |> evolveMany tail req
 
 
-evolve : Model -> Event -> Model
-evolve model event =
+evolve : Model -> Request -> Event -> ( Model, Cmd Msg )
+evolve model req event =
     case event of
         Js.Events.PlayerEvent playerId playerEvent ->
             if playerId == model.player.id then
-                { model | player = Player.evolve playerEvent model.player }
+                let
+                    { updated, events } =
+                        Player.evolve playerEvent model.player
+                    redirectionCommand = 
+                        case playerEvent of
+                            Player.CompletedRole _ -> Request.replaceRoute Gen.Route.Team req
+                            _ -> Cmd.none
+                in
+                ( { model | player = updated }
+                , events
+                    |> List.map (Js.Events.PlayerEvent updated.id)
+                    |> List.map Js.Events.publish
+                    |> (::) redirectionCommand
+                    |> Cmd.batch
+                )
 
             else
-                { model
+                ( { model
                     | players =
                         Dict.update playerId
-                            (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent |> Just)
+                            (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent |> .updated |> Just)
                             model.players
-                }
+                  }
+                , Cmd.none
+                )
 
         Js.Events.Reset ->
-            { model | player = Player.reset model.player, players = Dict.empty }
+            ( { model | player = Player.reset model.player, players = Dict.empty }
+            , Cmd.none
+            )
 
 
 subscriptions : Request -> Model -> Sub Msg

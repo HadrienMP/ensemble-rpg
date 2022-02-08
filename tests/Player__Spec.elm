@@ -113,10 +113,11 @@ evolveMany model events =
             model
 
         head :: tail ->
-            evolveMany (Core.Player.evolve head model) tail
+            evolveMany (Core.Player.evolve head model |> .updated) tail
 
 
 joinGame : Player
 joinGame =
     Core.Player.unknown
         |> Core.Player.evolve (ChangedIdentity { name = "Jane", icon = 'J' })
+        |> .updated
