@@ -33,6 +33,7 @@ type alias Player =
     , xp : Dict Role XpProgress
     }
 
+
 fromIdentity : PlayerId -> PlayerIdentity -> Player
 fromIdentity id identity =
     { id = id
@@ -41,9 +42,11 @@ fromIdentity id identity =
     , xp = Dict.empty
     }
 
+
 reset : Player -> Player
 reset player =
-    {player | completedRoles = Dict.empty, xp = Dict.empty}
+    { player | completedRoles = Dict.empty, xp = Dict.empty }
+
 
 unknown : Player
 unknown =
@@ -84,11 +87,12 @@ encodeIdentity identity =
         , ( "name", Json.Encode.string identity.name )
         ]
 
+
 identityDecoder : Json.Decode.Decoder PlayerIdentity
 identityDecoder =
     Json.Decode.succeed PlayerIdentity
-    |> required "icon" firstCharDecoder
-    |> required "name" Json.Decode.string
+        |> required "icon" firstCharDecoder
+        |> required "name" Json.Decode.string
 
 
 encodeEvent : Event -> Json.Encode.Value
@@ -187,6 +191,33 @@ accessibleLevels player =
         |> List.filter (isLevelAccessibleTo player)
 
 
+accessibleLevels2 : Player -> { levels : List Level, nextLevelRule : Maybe String }
+accessibleLevels2 player =
+    let
+        accessible =
+            accessibleLevels player
+    in
+    { levels = accessible
+    , nextLevelRule = nextLevelRule accessible
+    }
+
+
+nextLevelRule : List Level -> Maybe String
+nextLevelRule levels =
+    case levels |> List.sortBy Core.Level.toString |> List.reverse |> List.head of
+        Just Level3 ->
+            Just "Complete two level 3 roles to unlock level 4 roles"
+
+        Just Level2 ->
+            Just "Complete two level 2 roles to unlock level 3 roles"
+
+        Just Level1 ->
+            Just "Complete one role to unlock level 2 roles"
+
+        _ ->
+            Nothing
+
+
 isLevelAccessibleTo : Player -> Level -> Bool
 isLevelAccessibleTo player level =
     case level of
@@ -211,12 +242,16 @@ countRolesCompleted player level =
         |> List.length
 
 
-accessibleRoles : Player -> List (RoleCard msg)
+accessibleRoles : Player -> { roles : List (RoleCard msg), nextLevelRule : Maybe String }
 accessibleRoles player =
     let
+        levels : { levels : List Level, nextLevelRule : Maybe String }
         levels =
-            accessibleLevels player
+            accessibleLevels2 player
     in
-    RoleCard.all
-        |> List.filter (\card -> List.member card.level levels)
-        |> List.filter (\card -> progressOf card.role player |> not << completed)
+    { roles =
+        RoleCard.all
+            |> List.filter (\card -> List.member card.level levels.levels)
+            |> List.filter (\card -> progressOf card.role player |> not << completed)
+    , nextLevelRule = levels.nextLevelRule
+    }

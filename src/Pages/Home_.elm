@@ -7,11 +7,12 @@ import Core.XpProgress exposing (XpProgress)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
 import Gen.Route as Route
 import Page exposing (Page)
 import Request exposing (Request)
 import Shared
-import UI.Theme
+import UI.Theme exposing (darken)
 import View exposing (View)
 
 
@@ -26,15 +27,36 @@ view : Shared.Model -> View msg
 view shared =
     { title = "Homepage"
     , body =
-        UI.Theme.container { profile = shared.profile, currentRoute = Just Route.Home_ } [] <| roleCardsView shared
+        UI.Theme.container
+            { profile = shared.profile
+            , currentRoute = Just Route.Home_
+            }
+            []
+        <|
+            roleCardsView shared
     }
 
 
 roleCardsView : Shared.Model -> Element msg
 roleCardsView shared =
-    Player.accessibleRoles shared.player
-        |> List.map (roleView shared)
-        |> wrappedRow [ spacing 10 ]
+    let
+        accessibleRoles =
+            Player.accessibleRoles shared.player
+    in
+    column [ width fill, spacing 20 ]
+        [ accessibleRoles.roles
+            |> List.map (roleView shared)
+            |> wrappedRow [ spacing 10, width fill ]
+        , accessibleRoles.nextLevelRule
+            |> Maybe.map
+                (el
+                    [ Font.color <| darken 2 <| Color.Dracula.white
+                    , Font.size 16
+                    ]
+                    << text
+                )
+            |> Maybe.withDefault Element.none
+        ]
 
 
 roleView : Shared.Model -> RoleCard msg -> Element msg
