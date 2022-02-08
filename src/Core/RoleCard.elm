@@ -8,6 +8,7 @@ import Core.Role exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Gen.Route
 import Json.Decode
 import Json.Encode
 import List
@@ -270,14 +271,18 @@ view : DisplayMode -> RoleCard msg -> Element msg
 view mode role =
     case mode of
         Badge ->
-            column
-                [ Border.rounded 5
-                , Border.solid
-                , Border.width 2
-                , Border.color Color.Dracula.white
-                , Background.color <| UI.Theme.darken 4 <| colorOf role.level
-                ]
-                [ el [ width <| px 50, centerX, paddingXY 5 5 ] role.icon ]
+            link []
+                { url = Gen.Route.Role__Id_ { id = role.id } |> Gen.Route.toHref
+                , label =
+                    column
+                        [ Border.rounded 5
+                        , Border.solid
+                        , Border.width 2
+                        , Border.color Color.Dracula.white
+                        , Background.color <| UI.Theme.darken 4 <| colorOf role.level
+                        ]
+                        [ el [ width <| px 50, centerX, paddingXY 5 5 ] role.icon ]
+                }
 
         Card ->
             UI.Theme.card [ width fill ]
