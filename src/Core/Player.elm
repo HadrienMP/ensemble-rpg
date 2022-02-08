@@ -24,6 +24,7 @@ type alias PlayerIdentity =
 type Event
     = ChangedIdentity PlayerIdentity
     | DisplayedBehaviour Role
+    | CompletedRole Role
 
 
 type alias Player =
@@ -58,25 +59,32 @@ unknownIdentity =
     { icon = 'U', name = "Unknown" }
 
 
-evolve : Event -> Player -> Player
+evolve : Event -> Player -> { updated : Player, events : List Event }
 evolve event player =
     case event of
         ChangedIdentity identity ->
-            { player | identity = identity }
+            { updated = { player | identity = identity }
+            , events = []
+            }
 
         DisplayedBehaviour role ->
             let
                 progress =
                     progressOf role player |> Core.XpProgress.increment
             in
-            { player
-                | xp = Dict.insert role progress player.xp
-                , completedRoles =
-                    if Core.XpProgress.completed progress then
-                        Dict.insert role () player.completedRoles
+            { updated =
+                { player | xp = Dict.insert role progress player.xp }
+            , events =
+                if Core.XpProgress.completed progress then
+                    [ CompletedRole role ]
 
-                    else
-                        player.completedRoles
+                else
+                    []
+            }
+
+        CompletedRole role ->
+            { updated = { player | completedRoles = Dict.insert role () player.completedRoles }
+            , events = []
             }
 
 
@@ -114,6 +122,12 @@ encodeEvent event =
                 [ ( "type", Json.Encode.string "DisplayedBehaviour" )
                 , ( "data", RoleCard.encode role )
                 ]
+        
+        CompletedRole role -> 
+            Json.Encode.object
+                [ ( "type", Json.Encode.string "CompletedRole" )
+                , ( "data", RoleCard.encode role )
+                ]
 
 
 eventDecoder : Json.Decode.Decoder Event
@@ -130,6 +144,10 @@ eventDecoder =
 
                     "DisplayedBehaviour" ->
                         Json.Decode.succeed DisplayedBehaviour
+                            |> required "data" RoleCard.decoder
+
+                    "CompletedRole" ->
+                        Json.Decode.succeed CompletedRole
                             |> required "data" RoleCard.decoder
 
                     _ ->
