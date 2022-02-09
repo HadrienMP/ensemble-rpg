@@ -14,13 +14,13 @@ import AssocList as Dict exposing (Dict)
 import Core.Player as Player exposing (Player)
 import Core.PlayerId exposing (PlayerId)
 import Core.Profiles
+import Gen.Route
 import Js.Events exposing (Event)
 import Js.Storage
 import Json.Decode as Json
 import List exposing (head)
 import Random
 import Request exposing (Request)
-import Gen.Route
 
 
 type alias Flags =
@@ -141,26 +141,25 @@ evolve model req event =
         Js.Events.PlayerEvent playerId playerEvent ->
             if playerId == model.player.id then
                 let
-                    { updated, events } =
+                    updated =
                         Player.evolve playerEvent model.player
-                    redirectionCommand = 
-                        case playerEvent of
-                            Player.CompletedRole _ -> Request.replaceRoute Gen.Route.Team req
-                            _ -> Cmd.none
+
+                    redirectionCommand =
+                        if updated.completedRoles == model.player.completedRoles then
+                            Cmd.none
+
+                        else
+                            Request.replaceRoute Gen.Route.Team req
                 in
                 ( { model | player = updated }
-                , events
-                    |> List.map (Js.Events.PlayerEvent updated.id)
-                    |> List.map Js.Events.publish
-                    |> (::) redirectionCommand
-                    |> Cmd.batch
+                , redirectionCommand
                 )
 
             else
                 ( { model
                     | players =
                         Dict.update playerId
-                            (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent |> .updated |> Just)
+                            (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent |> Just)
                             model.players
                   }
                 , Cmd.none

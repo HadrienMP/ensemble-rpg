@@ -24,7 +24,6 @@ type alias PlayerIdentity =
 type Event
     = ChangedIdentity PlayerIdentity
     | DisplayedBehaviour Role
-    | CompletedRole Role
 
 
 type alias Player =
@@ -59,32 +58,25 @@ unknownIdentity =
     { icon = 'U', name = "Unknown" }
 
 
-evolve : Event -> Player -> { updated : Player, events : List Event }
+evolve : Event -> Player -> Player
 evolve event player =
     case event of
         ChangedIdentity identity ->
-            { updated = { player | identity = identity }
-            , events = []
-            }
+            { player | identity = identity }
 
         DisplayedBehaviour role ->
             let
                 progress =
                     progressOf role player |> Core.XpProgress.increment
             in
-            { updated =
-                { player | xp = Dict.insert role progress player.xp }
-            , events =
-                if Core.XpProgress.completed progress then
-                    [ CompletedRole role ]
+            { player
+                | xp = Dict.insert role progress player.xp
+                , completedRoles =
+                    if Core.XpProgress.completed progress then
+                        Dict.insert role () player.completedRoles
 
-                else
-                    []
-            }
-
-        CompletedRole role ->
-            { updated = { player | completedRoles = Dict.insert role () player.completedRoles }
-            , events = []
+                    else
+                        player.completedRoles
             }
 
 
@@ -122,12 +114,6 @@ encodeEvent event =
                 [ ( "type", Json.Encode.string "DisplayedBehaviour" )
                 , ( "data", RoleCard.encode role )
                 ]
-        
-        CompletedRole role -> 
-            Json.Encode.object
-                [ ( "type", Json.Encode.string "CompletedRole" )
-                , ( "data", RoleCard.encode role )
-                ]
 
 
 eventDecoder : Json.Decode.Decoder Event
@@ -144,10 +130,6 @@ eventDecoder =
 
                     "DisplayedBehaviour" ->
                         Json.Decode.succeed DisplayedBehaviour
-                            |> required "data" RoleCard.decoder
-
-                    "CompletedRole" ->
-                        Json.Decode.succeed CompletedRole
                             |> required "data" RoleCard.decoder
 
                     _ ->
@@ -203,17 +185,12 @@ completedRoleCards player =
     player.completedRoles |> Dict.keys |> List.map RoleCard.fromRole
 
 
-accessibleLevels : Player -> List Level
+accessibleLevels : Player -> { levels : List Level, nextLevelRule : Maybe String }
 accessibleLevels player =
-    all
-        |> List.filter (isLevelAccessibleTo player)
-
-
-accessibleLevels2 : Player -> { levels : List Level, nextLevelRule : Maybe String }
-accessibleLevels2 player =
     let
         accessible =
-            accessibleLevels player
+            all
+                |> List.filter (isLevelAccessibleTo player)
     in
     { levels = accessible
     , nextLevelRule = nextLevelRule accessible
@@ -265,7 +242,7 @@ accessibleRoles player =
     let
         levels : { levels : List Level, nextLevelRule : Maybe String }
         levels =
-            accessibleLevels2 player
+            accessibleLevels player
     in
     { roles =
         RoleCard.all

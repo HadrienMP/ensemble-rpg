@@ -1,7 +1,7 @@
 module Player__Spec exposing (..)
 
 import Core.Level exposing (Level(..))
-import Core.Player exposing (Event(..), Player, accessibleLevels2)
+import Core.Player exposing (Event(..), Player, accessibleLevels)
 import Core.Role
 import Expect
 import Test exposing (..)
@@ -14,7 +14,7 @@ suite =
             [ test "Only level 1 roles are accessible at first" <|
                 \_ ->
                     joinGame
-                        |> accessibleLevels2
+                        |> accessibleLevels
                         |> Expect.equal
                             { levels = [ Level1 ]
                             , nextLevelRule = Just "Complete one role to unlock level 2 roles"
@@ -24,7 +24,7 @@ suite =
                     \_ ->
                         joinGame
                             |> completeRole Core.Role.Mobber
-                            |> accessibleLevels2
+                            |> accessibleLevels
                             |> Expect.equal
                                 { levels = [ Level1, Level2 ]
                                 , nextLevelRule = Just "Complete two level 2 roles to unlock level 3 roles"
@@ -34,7 +34,7 @@ suite =
                         joinGame
                             |> completeRole Core.Role.Mobber
                             |> completeRole Core.Role.Navigator
-                            |> accessibleLevels2
+                            |> accessibleLevels
                             |> Expect.equal
                                 { levels = [ Level1, Level2 ]
                                 , nextLevelRule = Just "Complete two level 2 roles to unlock level 3 roles"
@@ -47,7 +47,7 @@ suite =
                             |> completeRole Core.Role.Mobber
                             |> completeRole Core.Role.Sponsor
                             |> completeRole Core.Role.Researcher
-                            |> accessibleLevels2
+                            |> accessibleLevels
                             |> Expect.equal
                                 { levels = [ Level1, Level2, Level3 ]
                                 , nextLevelRule = Just "Complete two level 3 roles to unlock level 4 roles"
@@ -59,7 +59,7 @@ suite =
                             |> completeRole Core.Role.Sponsor
                             |> completeRole Core.Role.Researcher
                             |> completeRole Core.Role.RearAdmiral
-                            |> accessibleLevels2
+                            |> accessibleLevels
                             |> Expect.equal
                                 { levels = [ Level1, Level2, Level3 ]
                                 , nextLevelRule = Just "Complete two level 3 roles to unlock level 4 roles"
@@ -71,7 +71,7 @@ suite =
                             |> completeRole Core.Role.Navigator
                             |> completeRole Core.Role.Driver
                             |> completeRole Core.Role.Sponsor
-                            |> accessibleLevels2
+                            |> accessibleLevels
                             |> Expect.equal
                                 { levels = [ Level1, Level2 ]
                                 , nextLevelRule = Just "Complete two level 2 roles to unlock level 3 roles"
@@ -86,7 +86,7 @@ suite =
                             |> completeRole Core.Role.Researcher
                             |> completeRole Core.Role.Archivist
                             |> completeRole Core.Role.Automationist
-                            |> accessibleLevels2
+                            |> accessibleLevels
                             |> Expect.equal
                                 { levels = [ Level1, Level2, Level3, Level4 ]
                                 , nextLevelRule = Nothing
@@ -113,11 +113,10 @@ evolveMany model events =
             model
 
         head :: tail ->
-            evolveMany (Core.Player.evolve head model |> .updated) tail
+            evolveMany (Core.Player.evolve head model) tail
 
 
 joinGame : Player
 joinGame =
     Core.Player.unknown
         |> Core.Player.evolve (ChangedIdentity { name = "Jane", icon = 'J' })
-        |> .updated
