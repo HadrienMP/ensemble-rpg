@@ -8,6 +8,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "Chadtech/random-pipeline": "1.0.2",
             "NoRedInk/elm-json-decode-pipeline": "1.0.1",
             "NoRedInk/elm-random-pcg-extended": "1.0.0",
             "NoRedInk/elm-uuid": "2.0.0",

@@ -2,8 +2,8 @@ module Core.Player exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Core.Level exposing (..)
-import Core.PlayerId as PlayerId exposing (..)
-import Core.PlayerName
+import Core.PlayerIdentity.PlayerId as PlayerId exposing (..)
+import Core.PlayerIdentity.PlayerName
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
 import Core.XpProgress exposing (XpProgress, completed)
@@ -20,7 +20,8 @@ import Random.Char
 
 
 type alias PlayerIdentity =
-    { icon : Char
+    { id : PlayerId
+    , icon : Char
     , name : String
     }
 
@@ -30,12 +31,14 @@ encodeIdentity identity =
     Json.Encode.object
         [ ( "icon", Json.Encode.string <| String.fromChar identity.icon )
         , ( "name", Json.Encode.string identity.name )
+        , ( "id", PlayerId.encode identity.id )
         ]
 
 
 identityDecoder : Json.Decode.Decoder PlayerIdentity
 identityDecoder =
     Json.Decode.succeed PlayerIdentity
+        |> required "id" (Json.Decode.string |> Json.Decode.map PlayerId)
         |> required "icon" firstCharDecoder
         |> required "name" Json.Decode.string
 
@@ -45,8 +48,7 @@ identityDecoder =
 
 
 type alias Player =
-    { id : PlayerId
-    , identity : PlayerIdentity
+    { identity : PlayerIdentity
     , completedRoles : Dict Role ()
     , xp : Dict Role XpProgress
     }
@@ -56,10 +58,9 @@ type alias Player =
 -- Factory
 
 
-fromIdentity : PlayerId -> PlayerIdentity -> Player
-fromIdentity id identity =
-    { id = id
-    , identity = identity
+fromIdentity : PlayerIdentity -> Player
+fromIdentity identity =
+    { identity = identity
     , completedRoles = Dict.empty
     , xp = Dict.empty
     }
@@ -67,44 +68,31 @@ fromIdentity id identity =
 
 unknown : Player
 unknown =
-    Player PlayerId.empty unknownIdentity Dict.empty Dict.empty
+    Player unknownIdentity Dict.empty Dict.empty
 
 
 unknownIdentity : PlayerIdentity
 unknownIdentity =
-    { icon = 'U', name = "Unknown" }
+    { id = PlayerId "???", icon = 'U', name = "Unknown" }
 
 
 
 -- Generator
---
 
 
-type alias PlayerWithIdentityEvent =
-    { player : Player, event : Event }
-
-
-generator : Random.Generator PlayerWithIdentityEvent
+generator : Random.Generator ( Player, Event )
 generator =
-    Random.map2
-        (\id identityResult ->
-            { player =
-                { id = id
-                , identity = identityResult.identity
-                , completedRoles = Dict.empty
-                , xp = Dict.empty
-                }
-            , event = identityResult.event
-            }
-        )
-        PlayerId.generator
-        playerIdentityGenerator
+    Random.map (Tuple.mapFirst fromIdentity) playerIdentityGenerator
 
 
-playerIdentityGenerator : Random.Generator { identity : PlayerIdentity, event : Event }
+playerIdentityGenerator : Random.Generator ( PlayerIdentity, Event )
 playerIdentityGenerator =
-    Random.map2 PlayerIdentity Random.Char.emoticon Core.PlayerName.generator
-        |> Random.map (\identity -> { identity = identity, event = ChangedIdentity identity })
+    Random.map3
+        PlayerIdentity
+        PlayerId.generator
+        Random.Char.emoticon
+        Core.PlayerIdentity.PlayerName.generator
+        |> Random.map (\identity -> ( identity, ChangedIdentity identity ))
 
 
 
@@ -124,7 +112,8 @@ encodeEvent event =
                 [ ( "type", Json.Encode.string "ChangedIdentity" )
                 , ( "data"
                   , Json.Encode.object
-                        [ ( "icon", Json.Encode.string <| String.fromChar identity.icon )
+                        [ ( "id", PlayerId.encode identity.id )
+                        , ( "icon", Json.Encode.string <| String.fromChar identity.icon )
                         , ( "name", Json.Encode.string identity.name )
                         ]
                   )
@@ -145,6 +134,7 @@ eventDecoder =
                 case eventName of
                     "ChangedIdentity" ->
                         Json.Decode.succeed PlayerIdentity
+                            |> requiredAt [ "data", "id" ] PlayerId.decoder
                             |> requiredAt [ "data", "icon" ] firstCharDecoder
                             |> requiredAt [ "data", "name" ] Json.Decode.string
                             |> Json.Decode.map ChangedIdentity
@@ -189,7 +179,9 @@ evolve event player =
             }
 
 
+
 -- Functions
+
 
 progressOf : Role -> Player -> XpProgress
 progressOf target player =

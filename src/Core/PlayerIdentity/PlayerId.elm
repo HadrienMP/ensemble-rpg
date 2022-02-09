@@ -1,4 +1,4 @@
-module Core.PlayerId exposing (..)
+module Core.PlayerIdentity.PlayerId exposing (..)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode

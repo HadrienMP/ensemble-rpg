@@ -76,7 +76,7 @@ update { player } msg model =
         GainXp ->
             ( model
             , Player.DisplayedBehaviour model.card.role
-                |> Shared.PlayerEvent player.id
+                |> Shared.PlayerEvent player.identity.id
                 |> Effect.fromShared
             )
 

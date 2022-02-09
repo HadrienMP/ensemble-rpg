@@ -2,6 +2,7 @@ module Player__Spec exposing (..)
 
 import Core.Level exposing (Level(..))
 import Core.Player exposing (Event(..), Player, accessibleLevels)
+import Core.PlayerIdentity.PlayerId exposing (PlayerId(..))
 import Core.Role
 import Expect
 import Test exposing (..)
@@ -119,4 +120,4 @@ evolveMany model events =
 joinGame : Player
 joinGame =
     Core.Player.unknown
-        |> Core.Player.evolve (ChangedIdentity { name = "Jane", icon = 'J' })
+        |> Core.Player.evolve (ChangedIdentity { id = PlayerId "id", name = "Jane", icon = 'J' })

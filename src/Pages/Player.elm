@@ -63,9 +63,9 @@ update { player } msg _ =
             ( {}
             , Effect.batch
                 [ ChangedIdentity updatedIdentity
-                    |> Shared.PlayerEvent player.id
+                    |> Shared.PlayerEvent player.identity.id
                     |> Effect.fromShared
-                , Js.Storage.saveIdentity player.id updatedIdentity
+                , Js.Storage.saveIdentity updatedIdentity
                     |> Effect.fromCmd
                 ]
             )

@@ -1,7 +1,7 @@
 port module Js.Events exposing (..)
 
 import Core.Player
-import Core.PlayerId as PlayerId exposing (..)
+import Core.PlayerIdentity.PlayerId as PlayerId exposing (..)
 import Core.Role exposing (Role(..))
 import Json.Decode as Decode
 import Json.Encode

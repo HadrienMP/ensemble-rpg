@@ -1,30 +1,22 @@
 port module Js.Storage exposing (..)
 
 import Core.Player exposing (PlayerIdentity)
-import Core.PlayerId exposing (PlayerId)
 import Json.Decode
 import Json.Decode.Pipeline exposing (optional)
 import Json.Encode
-import Json.Decode.Pipeline exposing (required)
-import Core.Player
 
 
 port saveInStorage : Json.Encode.Value -> Cmd msg
 
 
-type alias StoragePlayer =
-    { id : PlayerId
-    , identity : PlayerIdentity
-    }
-
-
 type alias Storage =
-    { player : Maybe StoragePlayer
+    { player : Maybe PlayerIdentity
     }
 
-saveIdentity : PlayerId -> PlayerIdentity -> Cmd msg
-saveIdentity id identity =
-    persist { player = Just { id = id, identity = identity } }
+
+saveIdentity : PlayerIdentity -> Cmd msg
+saveIdentity identity =
+    persist { player = Just identity }
 
 
 persist : Storage -> Cmd msg
@@ -38,8 +30,7 @@ persist storage =
                 Json.Encode.object
                     [ ( "player"
                       , Json.Encode.object
-                            [ ( "id", Core.PlayerId.encode player.id )
-                            , ( "identity", Core.Player.encodeIdentity player.identity )
+                            [ ( "identity", Core.Player.encodeIdentity player )
                             ]
                       )
                     ]
@@ -51,15 +42,14 @@ fromString rawStorage =
         |> Json.Decode.decodeString decoder
         |> Result.withDefault { player = Nothing }
 
+
 decoder : Json.Decode.Decoder Storage
 decoder =
     Json.Decode.succeed Storage
         |> optional "player" storedPlayerDecoder Nothing
 
 
-storedPlayerDecoder : Json.Decode.Decoder (Maybe StoragePlayer)
+storedPlayerDecoder : Json.Decode.Decoder (Maybe PlayerIdentity)
 storedPlayerDecoder =
-    Json.Decode.succeed StoragePlayer
-        |> required "id" Core.PlayerId.decoder
-        |> required "identity" Core.Player.identityDecoder
+    Json.Decode.field "identity" Core.Player.identityDecoder
         |> Json.Decode.map Just
