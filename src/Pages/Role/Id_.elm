@@ -18,6 +18,7 @@ import Request
 import Shared
 import UI.Theme as Theme exposing (h2)
 import View exposing (View)
+import Core.Player.Event exposing (Event(..))
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
@@ -75,7 +76,7 @@ update { player } msg model =
     case msg of
         GainXp ->
             ( model
-            , Player.DisplayedBehaviour model.card.role
+            , DisplayedBehaviour model.card.role
                 |> Shared.PlayerEvent player.identity.id
                 |> Effect.fromShared
             )

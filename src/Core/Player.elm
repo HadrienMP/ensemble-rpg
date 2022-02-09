@@ -7,13 +7,11 @@ import Core.Player.Name
 import Core.Role exposing (Role)
 import Core.RoleCard as RoleCard exposing (RoleCard)
 import Core.XpProgress exposing (XpProgress)
-import Js.DecoderExtra exposing (firstCharDecoder)
-import Json.Decode
-import Json.Decode.Pipeline exposing (required, requiredAt)
-import Json.Encode
 import Random
 import Random.Char
 import Core.Player.Identity exposing (PlayerIdentity)
+import Core.Player.Event
+import Core.Player.Event exposing (Event(..))
 
 
 
@@ -53,12 +51,12 @@ unknownIdentity =
 -- Generator
 
 
-generator : Random.Generator ( Player, Event )
+generator : Random.Generator ( Player, Core.Player.Event.Event )
 generator =
     Random.map (Tuple.mapFirst fromIdentity) playerIdentityGenerator
 
 
-playerIdentityGenerator : Random.Generator ( PlayerIdentity, Event )
+playerIdentityGenerator : Random.Generator ( PlayerIdentity, Core.Player.Event.Event )
 playerIdentityGenerator =
     Random.map3
         PlayerIdentity
@@ -66,59 +64,6 @@ playerIdentityGenerator =
         Random.Char.emoticon
         Core.Player.Name.generator
         |> Random.map (\identity -> ( identity, ChangedIdentity identity ))
-
-
-
--- Event
-
-
-type Event
-    = ChangedIdentity PlayerIdentity
-    | DisplayedBehaviour Role
-
-
-encodeEvent : Event -> Json.Encode.Value
-encodeEvent event =
-    case event of
-        ChangedIdentity identity ->
-            Json.Encode.object
-                [ ( "type", Json.Encode.string "ChangedIdentity" )
-                , ( "data"
-                  , Json.Encode.object
-                        [ ( "id", PlayerId.encode identity.id )
-                        , ( "icon", Json.Encode.string <| String.fromChar identity.icon )
-                        , ( "name", Json.Encode.string identity.name )
-                        ]
-                  )
-                ]
-
-        DisplayedBehaviour role ->
-            Json.Encode.object
-                [ ( "type", Json.Encode.string "DisplayedBehaviour" )
-                , ( "data", RoleCard.encode role )
-                ]
-
-
-eventDecoder : Json.Decode.Decoder Event
-eventDecoder =
-    Json.Decode.field "type" Json.Decode.string
-        |> Json.Decode.andThen
-            (\eventName ->
-                case eventName of
-                    "ChangedIdentity" ->
-                        Json.Decode.succeed PlayerIdentity
-                            |> requiredAt [ "data", "id" ] PlayerId.decoder
-                            |> requiredAt [ "data", "icon" ] firstCharDecoder
-                            |> requiredAt [ "data", "name" ] Json.Decode.string
-                            |> Json.Decode.map ChangedIdentity
-
-                    "DisplayedBehaviour" ->
-                        Json.Decode.succeed DisplayedBehaviour
-                            |> required "data" RoleCard.decoder
-
-                    _ ->
-                        Json.Decode.fail <| "This is an unknown event: " ++ eventName
-            )
 
 
 

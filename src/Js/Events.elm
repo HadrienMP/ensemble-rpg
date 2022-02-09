@@ -1,13 +1,12 @@
 port module Js.Events exposing (..)
 
-import Core.Player
 import Core.Player.Id as PlayerId exposing (..)
 import Core.Role exposing (Role(..))
 import Json.Decode as Decode
 import Json.Encode
 import Test.Html.Event exposing (Event)
 import Json.Decode.Pipeline exposing (requiredAt)
-import Core.Player
+import Core.Player.Event
 
 
 port ready : () -> Cmd msg
@@ -38,7 +37,7 @@ publish event =
 
 
 type Event
-    = PlayerEvent PlayerId Core.Player.Event
+    = PlayerEvent PlayerId Core.Player.Event.Event
     | Reset
 
 
@@ -66,7 +65,7 @@ encodeEventData event =
         PlayerEvent id playerEvent ->
             Json.Encode.object
                 [ ( "playerId", PlayerId.encode id )
-                , ( "event", Core.Player.encodeEvent playerEvent )
+                , ( "event", Core.Player.Event.encode playerEvent )
                 ]
 
         Reset ->
@@ -81,7 +80,7 @@ eventDecoder =
             "Player" ->            
                 Decode.succeed PlayerEvent
                     |> requiredAt ["data", "playerId"] PlayerId.decoder
-                    |> requiredAt ["data", "event"] Core.Player.eventDecoder
+                    |> requiredAt ["data", "event"] Core.Player.Event.decoder
 
             "Reset" ->
                 Decode.succeed Reset

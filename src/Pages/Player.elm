@@ -1,7 +1,6 @@
 module Pages.Player exposing (Model, Msg, page)
 
 import Color.Dracula
-import Core.Player as Player exposing (Event(..))
 import Core.RoleCard exposing (DisplayMode(..))
 import Effect exposing (Effect)
 import Element exposing (centerX, column, el, paddingEach, paddingXY, px, spacing, text, width, wrappedRow)
@@ -16,6 +15,8 @@ import Request exposing (Request)
 import Shared
 import UI.Theme exposing (CardSize(..), emptySides, transparent)
 import View exposing (View)
+import Core.Player.Event exposing (Event(..))
+import Core.Player
 
 
 page : Shared.Model -> Request -> Page.With Model Msg
@@ -110,10 +111,10 @@ view { player, profile } _ =
                                 , placeholder = Nothing
                                 , label = Element.Input.labelHidden "Your name"
                                 }
-                    , sub = text <| (String.fromInt <| Player.numberOfBadgesWon player) ++ " badges"
+                    , sub = text <| (String.fromInt <| Core.Player.numberOfBadgesWon player) ++ " badges"
                     }
                 , wrappedRow [ spacing 10, centerX ]
-                    (Player.completedRoleCards player
+                    (Core.Player.completedRoleCards player
                         |> List.map (Core.RoleCard.view Badge)
                     )
                 ]

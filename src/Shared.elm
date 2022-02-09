@@ -15,12 +15,14 @@ import Core.Player as Player exposing (Player)
 import Core.Player.Id exposing (PlayerId)
 import Core.Profiles
 import Gen.Route
-import Js.Events exposing (Event)
+import Js.Events
 import Js.Storage
 import Json.Decode as Json
 import List exposing (head)
 import Random
 import Request exposing (Request)
+import Core.Player.Event
+import Core.Player.Event exposing (Event(..))
 
 
 type alias Flags =
@@ -61,7 +63,7 @@ allPlayers model =
     model.player :: Dict.values model.players
 
 
-evolveMany : List Event -> Request -> Model -> Model
+evolveMany : List Js.Events.Event -> Request -> Model -> Model
 evolveMany events req model =
     case events of
         [] ->
@@ -73,7 +75,7 @@ evolveMany events req model =
                 |> evolveMany tail req
 
 
-evolve : Model -> Request -> Event -> ( Model, Cmd Msg )
+evolve : Model -> Request -> Js.Events.Event -> ( Model, Cmd Msg )
 evolve model req event =
     case event of
         Js.Events.PlayerEvent playerId playerEvent ->
@@ -114,8 +116,8 @@ evolve model req event =
 
 
 type Msg
-    = PlayerEvent PlayerId Player.Event
-    | CreatedPlayer ( Player, Player.Event )
+    = PlayerEvent PlayerId Core.Player.Event.Event
+    | CreatedPlayer ( Player, Core.Player.Event.Event )
     | GotEvent (Result Json.Error Js.Events.Event)
     | GotHistory (Result Json.Error (List Js.Events.Event))
 
@@ -149,7 +151,7 @@ init _ flags =
             , Cmd.batch
                 [ Js.Events.publish <|
                     Js.Events.PlayerEvent player.id <|
-                        Player.ChangedIdentity player
+                        ChangedIdentity player
                 , Js.Events.ready ()
                 ]
             )

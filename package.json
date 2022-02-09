@@ -7,7 +7,7 @@
         "build": "elm-spa gen && elm-spa build",
         "start": "node server/app.js",
         "dev": "concurrently \"npm run watch\"  \"nodemon server/app.js --watch server/app.js\" ",
-        "watch": "watch 'elm-spa gen && elm make .elm-spa/defaults/Main.elm --output=public/dist/elm.js' src",
+        "watch": "watch 'elm-spa gen && elm make .elm-spa/defaults/Main.elm --output=public/dist/elm.js --debug' src",
         "test": "elm-test-rs",
         "test:watch": "elm-test-rs --watch",
         "postinstall": "elm-tooling install",
