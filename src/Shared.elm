@@ -12,7 +12,7 @@ module Shared exposing
 
 import AssocList as Dict exposing (Dict)
 import Core.Player as Player exposing (Player)
-import Core.PlayerIdentity.PlayerId exposing (PlayerId)
+import Core.Player.Id exposing (PlayerId)
 import Core.Profiles
 import Gen.Route
 import Js.Events exposing (Event)

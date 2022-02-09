@@ -1,11 +1,12 @@
 module Player__Spec exposing (..)
 
 import Core.Level exposing (Level(..))
-import Core.Player exposing (Event(..), Player, accessibleLevels)
-import Core.PlayerIdentity.PlayerId exposing (PlayerId(..))
+import Core.Player exposing (Event(..), Player)
+import Core.Player.Id exposing (PlayerId(..))
 import Core.Role
 import Expect
 import Test exposing (..)
+import Core.AccessibleRoles exposing (accessibleLevels)
 
 
 suite : Test

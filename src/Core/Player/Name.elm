@@ -1,4 +1,4 @@
-module Core.PlayerIdentity.PlayerName exposing (generator)
+module Core.Player.Name exposing (generator)
 
 import Dict
 import Random

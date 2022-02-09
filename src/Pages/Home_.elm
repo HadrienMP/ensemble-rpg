@@ -14,6 +14,7 @@ import Request exposing (Request)
 import Shared
 import UI.Theme exposing (darken)
 import View exposing (View)
+import Core.AccessibleRoles
 
 
 page : Shared.Model -> Request -> Page
@@ -41,7 +42,7 @@ roleCardsView : Shared.Model -> Element msg
 roleCardsView shared =
     let
         accessibleRoles =
-            Player.accessibleRoles shared.player
+            Core.AccessibleRoles.list shared.player
     in
     column [ width fill, spacing 20 ]
         [ accessibleRoles.roles

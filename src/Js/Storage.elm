@@ -1,6 +1,6 @@
 port module Js.Storage exposing (..)
 
-import Core.Player exposing (PlayerIdentity)
+import Core.Player.Identity exposing (PlayerIdentity)
 import Json.Decode
 import Json.Decode.Pipeline exposing (optional)
 import Json.Encode
@@ -30,7 +30,7 @@ persist storage =
                 Json.Encode.object
                     [ ( "player"
                       , Json.Encode.object
-                            [ ( "identity", Core.Player.encodeIdentity player )
+                            [ ( "identity", Core.Player.Identity.encode player )
                             ]
                       )
                     ]
@@ -51,5 +51,5 @@ decoder =
 
 storedPlayerDecoder : Json.Decode.Decoder (Maybe PlayerIdentity)
 storedPlayerDecoder =
-    Json.Decode.field "identity" Core.Player.identityDecoder
+    Json.Decode.field "identity" Core.Player.Identity.decoder
         |> Json.Decode.map Just
