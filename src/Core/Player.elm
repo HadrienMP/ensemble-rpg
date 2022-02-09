@@ -15,69 +15,14 @@ import Random
 import Random.Char
 
 
+
+-- Identity
+
+
 type alias PlayerIdentity =
     { icon : Char
     , name : String
     }
-
-
-type Event
-    = ChangedIdentity PlayerIdentity
-    | DisplayedBehaviour Role
-
-
-type alias Player =
-    { id : PlayerId
-    , identity : PlayerIdentity
-    , completedRoles : Dict Role ()
-    , xp : Dict Role XpProgress
-    }
-
-
-fromIdentity : PlayerId -> PlayerIdentity -> Player
-fromIdentity id identity =
-    { id = id
-    , identity = identity
-    , completedRoles = Dict.empty
-    , xp = Dict.empty
-    }
-
-
-reset : Player -> Player
-reset player =
-    { player | completedRoles = Dict.empty, xp = Dict.empty }
-
-
-unknown : Player
-unknown =
-    Player PlayerId.empty unknownIdentity Dict.empty Dict.empty
-
-
-unknownIdentity : PlayerIdentity
-unknownIdentity =
-    { icon = 'U', name = "Unknown" }
-
-
-evolve : Event -> Player -> Player
-evolve event player =
-    case event of
-        ChangedIdentity identity ->
-            { player | identity = identity }
-
-        DisplayedBehaviour role ->
-            let
-                progress =
-                    progressOf role player |> Core.XpProgress.increment
-            in
-            { player
-                | xp = Dict.insert role progress player.xp
-                , completedRoles =
-                    if Core.XpProgress.completed progress then
-                        Dict.insert role () player.completedRoles
-
-                    else
-                        player.completedRoles
-            }
 
 
 encodeIdentity : PlayerIdentity -> Json.Encode.Value
@@ -93,6 +38,82 @@ identityDecoder =
     Json.Decode.succeed PlayerIdentity
         |> required "icon" firstCharDecoder
         |> required "name" Json.Decode.string
+
+
+
+-- Model
+
+
+type alias Player =
+    { id : PlayerId
+    , identity : PlayerIdentity
+    , completedRoles : Dict Role ()
+    , xp : Dict Role XpProgress
+    }
+
+
+
+-- Factory
+
+
+fromIdentity : PlayerId -> PlayerIdentity -> Player
+fromIdentity id identity =
+    { id = id
+    , identity = identity
+    , completedRoles = Dict.empty
+    , xp = Dict.empty
+    }
+
+
+unknown : Player
+unknown =
+    Player PlayerId.empty unknownIdentity Dict.empty Dict.empty
+
+
+unknownIdentity : PlayerIdentity
+unknownIdentity =
+    { icon = 'U', name = "Unknown" }
+
+
+
+-- Generator
+--
+
+
+type alias PlayerWithIdentityEvent =
+    { player : Player, event : Event }
+
+
+generator : Random.Generator PlayerWithIdentityEvent
+generator =
+    Random.map2
+        (\id identityResult ->
+            { player =
+                { id = id
+                , identity = identityResult.identity
+                , completedRoles = Dict.empty
+                , xp = Dict.empty
+                }
+            , event = identityResult.event
+            }
+        )
+        PlayerId.generator
+        playerIdentityGenerator
+
+
+playerIdentityGenerator : Random.Generator { identity : PlayerIdentity, event : Event }
+playerIdentityGenerator =
+    Random.map2 PlayerIdentity Random.Char.emoticon Core.PlayerName.generator
+        |> Random.map (\identity -> { identity = identity, event = ChangedIdentity identity })
+
+
+
+-- Event
+
+
+type Event
+    = ChangedIdentity PlayerIdentity
+    | DisplayedBehaviour Role
 
 
 encodeEvent : Event -> Json.Encode.Value
@@ -138,35 +159,37 @@ eventDecoder =
 
 
 
---
+-- Rest
 
 
-type alias PlayerWithIdentityEvent =
-    { player : Player, event : Event }
+reset : Player -> Player
+reset player =
+    { player | completedRoles = Dict.empty, xp = Dict.empty }
 
 
-generator : Random.Generator PlayerWithIdentityEvent
-generator =
-    Random.map2
-        (\id identityResult ->
-            { player =
-                { id = id
-                , identity = identityResult.identity
-                , completedRoles = Dict.empty
-                , xp = Dict.empty
-                }
-            , event = identityResult.event
+evolve : Event -> Player -> Player
+evolve event player =
+    case event of
+        ChangedIdentity identity ->
+            { player | identity = identity }
+
+        DisplayedBehaviour role ->
+            let
+                progress =
+                    progressOf role player |> Core.XpProgress.increment
+            in
+            { player
+                | xp = Dict.insert role progress player.xp
+                , completedRoles =
+                    if Core.XpProgress.completed progress then
+                        Dict.insert role () player.completedRoles
+
+                    else
+                        player.completedRoles
             }
-        )
-        PlayerId.generator
-        playerIdentityGenerator
 
 
-playerIdentityGenerator : Random.Generator { identity : PlayerIdentity, event : Event }
-playerIdentityGenerator =
-    Random.map2 PlayerIdentity Random.Char.emoticon Core.PlayerName.generator
-        |> Random.map (\identity -> { identity = identity, event = ChangedIdentity identity })
-
+-- Functions
 
 progressOf : Role -> Player -> XpProgress
 progressOf target player =
