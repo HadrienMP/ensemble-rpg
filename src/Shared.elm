@@ -12,6 +12,7 @@ module Shared exposing
 
 import AssocList as Dict exposing (Dict)
 import Core.Player as Player exposing (Player)
+import Core.Player.Event exposing (EventData(..), toEvent)
 import Core.Player.Id exposing (PlayerId)
 import Core.Profiles
 import Gen.Route
@@ -21,8 +22,7 @@ import Json.Decode as Json
 import List exposing (head)
 import Random
 import Request exposing (Request)
-import Core.Player.Event
-import Core.Player.Event exposing (Event(..))
+import Uuid exposing (Uuid, uuidGenerator)
 
 
 type alias Flags =
@@ -78,11 +78,11 @@ evolveMany events req model =
 evolve : Model -> Request -> Js.Events.Event -> ( Model, Cmd Msg )
 evolve model req event =
     case event of
-        Js.Events.PlayerEvent playerId playerEvent ->
-            if playerId == model.player.identity.id then
+        Js.Events.PlayerEvent playerEvent ->
+            if playerEvent.playerId == model.player.identity.id then
                 let
                     updated =
-                        Player.evolve playerEvent model.player
+                        Player.evolve playerEvent.data model.player
 
                     redirectionCommand =
                         if updated.completedRoles == model.player.completedRoles then
@@ -98,8 +98,8 @@ evolve model req event =
             else
                 ( { model
                     | players =
-                        Dict.update playerId
-                            (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent |> Just)
+                        Dict.update playerEvent.playerId
+                            (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent.data |> Just)
                             model.players
                   }
                 , Cmd.none
@@ -116,8 +116,8 @@ evolve model req event =
 
 
 type Msg
-    = PlayerEvent PlayerId Core.Player.Event.Event
-    | CreatedPlayer ( Player, Core.Player.Event.Event )
+    = PlayerEvent Core.Player.Event.Event
+    | CreatedPlayer ( Uuid, Player )
     | GotEvent (Result Json.Error Js.Events.Event)
     | GotHistory (Result Json.Error (List Js.Events.Event))
 
@@ -140,20 +140,19 @@ init _ flags =
               , player = Player.unknown
               , profile = Core.Profiles.fromAdminBool flags.admin
               }
-            , Random.generate CreatedPlayer Player.generator
+            , ( uuidGenerator, Player.generator )
+                |> (\( a, b ) -> Random.map2 Tuple.pair a b)
+                |> Random.generate CreatedPlayer
             )
 
-        Just player ->
+        Just playerIdentity ->
             ( { players = Dict.empty
-              , player = Player.fromIdentity player
+              , player = Player.fromIdentity playerIdentity
               , profile = Core.Profiles.fromAdminBool flags.admin
               }
-            , Cmd.batch
-                [ Js.Events.publish <|
-                    Js.Events.PlayerEvent player.id <|
-                        ChangedIdentity player
-                , Js.Events.ready ()
-                ]
+            , uuidGenerator
+                |> Random.map (\a -> ( a, Player.fromIdentity playerIdentity ))
+                |> Random.generate CreatedPlayer
             )
 
 
@@ -164,16 +163,19 @@ init _ flags =
 update : Request -> Msg -> Model -> ( Model, Cmd Msg )
 update req msg model =
     case msg of
-        PlayerEvent playerId event ->
+        PlayerEvent event ->
             ( model
-            , Js.Events.publish <| Js.Events.PlayerEvent playerId event
+            , Js.Events.publish <| Js.Events.PlayerEvent event
             )
 
-        CreatedPlayer ( player, event ) ->
+        CreatedPlayer ( uuid, player ) ->
             ( { model | player = player }
             , Cmd.batch
                 [ Js.Storage.saveIdentity player.identity
-                , Js.Events.publish <| Js.Events.PlayerEvent player.identity.id event
+                , ChangedIdentity player.identity
+                    |> toEvent uuid player.identity.id
+                    |> Js.Events.PlayerEvent
+                    |> Js.Events.publish
                 , Js.Events.ready ()
                 ]
             )

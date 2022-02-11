@@ -1,20 +1,51 @@
 module Core.Player.Event exposing (..)
 
+import Core.Player.Id exposing (PlayerId)
 import Core.Player.Identity exposing (PlayerIdentity)
 import Core.Role exposing (Role)
+import Core.RoleCard
 import Json.Decode
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode
-import Core.RoleCard
+import Uuid exposing (Uuid)
 
 
-type Event
+type alias Event =
+    { id : Uuid
+    , playerId : PlayerId
+    , data : EventData
+    }
+
+
+toEvent : Uuid -> PlayerId -> EventData -> Event
+toEvent uuid playerId data =
+    { id = uuid, playerId = playerId, data = data }
+
+
+type EventData
     = ChangedIdentity PlayerIdentity
     | DisplayedBehaviour Role
 
 
 encode : Event -> Json.Encode.Value
 encode event =
+    Json.Encode.object
+        [ ( "id", Uuid.encode event.id )
+        , ( "playerId", Core.Player.Id.encode event.playerId )
+        , ( "data", encodeData event.data )
+        ]
+
+
+decoder : Json.Decode.Decoder Event
+decoder =
+    Json.Decode.succeed Event
+        |> required "id" Uuid.decoder
+        |> required "playerId" Core.Player.Id.decoder
+        |> required "data" dataDecoder
+
+
+encodeData : EventData -> Json.Encode.Value
+encodeData event =
     case event of
         ChangedIdentity identity ->
             Json.Encode.object
@@ -31,8 +62,8 @@ encode event =
                 ]
 
 
-decoder : Json.Decode.Decoder Event
-decoder =
+dataDecoder : Json.Decode.Decoder EventData
+dataDecoder =
     Json.Decode.field "type" Json.Decode.string
         |> Json.Decode.andThen
             (\eventName ->

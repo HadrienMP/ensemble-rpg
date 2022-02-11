@@ -1,12 +1,12 @@
 port module Js.Events exposing (..)
 
+import Core.Player.Event
 import Core.Player.Id as PlayerId exposing (..)
 import Core.Role exposing (Role(..))
 import Json.Decode as Decode
+import Json.Decode.Pipeline exposing (required)
 import Json.Encode
 import Test.Html.Event exposing (Event)
-import Json.Decode.Pipeline exposing (requiredAt)
-import Core.Player.Event
 
 
 port ready : () -> Cmd msg
@@ -37,14 +37,14 @@ publish event =
 
 
 type Event
-    = PlayerEvent PlayerId Core.Player.Event.Event
+    = PlayerEvent Core.Player.Event.Event
     | Reset
 
 
 eventType : Event -> String
 eventType event =
     case event of
-        PlayerEvent _ _ ->
+        PlayerEvent _ ->
             "Player"
 
         Reset ->
@@ -55,18 +55,15 @@ encode : Event -> Json.Encode.Value
 encode event =
     Json.Encode.object
         [ ( "type", Json.Encode.string <| eventType event )
-        , ( "data", encodeEventData event)
+        , ( "data", encodeEventData event )
         ]
 
 
 encodeEventData : Event -> Json.Encode.Value
 encodeEventData event =
     case event of
-        PlayerEvent id playerEvent ->
-            Json.Encode.object
-                [ ( "playerId", PlayerId.encode id )
-                , ( "event", Core.Player.Event.encode playerEvent )
-                ]
+        PlayerEvent playerEvent ->
+            Core.Player.Event.encode playerEvent
 
         Reset ->
             Json.Encode.null
@@ -75,17 +72,16 @@ encodeEventData event =
 eventDecoder : Decode.Decoder Event
 eventDecoder =
     Decode.field "type" Decode.string
-    |> Decode.andThen (\t -> 
-        case t of
-            "Player" ->            
-                Decode.succeed PlayerEvent
-                    |> requiredAt ["data", "playerId"] PlayerId.decoder
-                    |> requiredAt ["data", "event"] Core.Player.Event.decoder
+        |> Decode.andThen
+            (\t ->
+                case t of
+                    "Player" ->
+                        Decode.succeed PlayerEvent
+                            |> required "data" Core.Player.Event.decoder
 
-            "Reset" ->
-                Decode.succeed Reset
-            
-            _ -> 
-                Decode.fail <| "I don't know this js event type: " ++ t
+                    "Reset" ->
+                        Decode.succeed Reset
 
-    )
+                    _ ->
+                        Decode.fail <| "I don't know this js event type: " ++ t
+            )

@@ -4,7 +4,7 @@ import Core.Level exposing (Level(..))
 import Core.Player exposing (Player)
 import Core.Player.Id exposing (PlayerId(..))
 import Core.Role
-import Core.Player.Event exposing (Event(..))
+import Core.Player.Event exposing (EventData(..))
 import Expect
 import Test exposing (..)
 import Core.AccessibleRoles exposing (accessibleLevels)
@@ -109,7 +109,7 @@ completeRole role player =
         |> evolveMany player
 
 
-evolveMany : Player -> List Event -> Player
+evolveMany : Player -> List EventData -> Player
 evolveMany model events =
     case events of
         [] ->

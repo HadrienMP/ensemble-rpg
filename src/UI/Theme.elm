@@ -68,7 +68,7 @@ navigation : PageContext -> Element msg
 navigation context =
     el
         [ Region.navigation
-        , Background.color Color.Dracula.blue
+        , Background.color <| darken 2 <| Color.Dracula.blue
         , width fill
         , Position.fixAt { emptyPosition | bottom = Just 0 }
         , Border.shadow

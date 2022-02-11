@@ -2,6 +2,7 @@ module Pages.Role.Id_ exposing (Model, Msg, page)
 
 import Color.Dracula
 import Core.Player as Player
+import Core.Player.Event exposing (EventData(..))
 import Core.Role
 import Core.RoleCard as RoleCard exposing (Behaviour, RoleCard)
 import Core.XpProgress
@@ -14,11 +15,12 @@ import Element.Input as Input
 import Gen.Params.Role.Id_ exposing (Params)
 import Gen.Route
 import Page
+import Random
 import Request
 import Shared
 import UI.Theme as Theme exposing (h2)
+import Uuid exposing (Uuid, uuidGenerator)
 import View exposing (View)
-import Core.Player.Event exposing (Event(..))
 
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
@@ -38,11 +40,14 @@ page shared req =
 
 
 type Msg
-    = GainXp
+    = GainXp Uuid
+    | GotUuid Uuid
 
 
 type alias Model =
-    { card : RoleCard Msg }
+    { card : RoleCard Msg
+    , nextEventId : Maybe Uuid
+    }
 
 
 
@@ -55,12 +60,12 @@ init : Request.With Params -> ( Model, Effect Msg )
 init req =
     case RoleCard.findById req.params.id of
         Just card ->
-            ( { card = card }
-            , Effect.none
+            ( { card = card, nextEventId = Nothing }
+            , Effect.fromCmd <| Random.generate GotUuid uuidGenerator
             )
 
         Nothing ->
-            ( { card = RoleCard.fromRole Core.Role.Mobber }
+            ( { card = RoleCard.fromRole Core.Role.Mobber, nextEventId = Nothing }
             , Effect.fromCmd <| Request.replaceRoute Gen.Route.NotFound req
             )
 
@@ -72,14 +77,21 @@ init req =
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
-update { player } msg model =
+update shared msg model =
     case msg of
-        GainXp ->
-            ( model
-            , DisplayedBehaviour model.card.role
-                |> Shared.PlayerEvent player.identity.id
-                |> Effect.fromShared
+        GainXp uuid ->
+            ( { model | nextEventId = Nothing }
+            , Effect.batch
+                [ DisplayedBehaviour model.card.role
+                    |> Core.Player.Event.toEvent uuid shared.player.identity.id
+                    |> Shared.PlayerEvent
+                    |> Effect.fromShared
+                , Effect.fromCmd <| Random.generate GotUuid uuidGenerator
+                ]
             )
+
+        GotUuid uuid ->
+            ( { model | nextEventId = Just uuid }, Effect.none )
 
 
 
@@ -101,7 +113,7 @@ view { player, profile } model =
                     ]
                 , column [ width fill ]
                     [ h2 [] <| text "Gain XP"
-                    , displayBehaviours model.card
+                    , displayBehaviours model
                     ]
                 , row [ spacingXY 20 0, width fill ]
                     [ h2 [ padding 0 ] <| text "XP"
@@ -127,17 +139,21 @@ displayDescription role =
 -- Behaviour
 
 
-displayBehaviours : RoleCard Msg -> Element Msg
-displayBehaviours role =
+displayBehaviours : Model -> Element Msg
+displayBehaviours model =
+    let
+        darkenPower =
+            Maybe.map (\_ -> 4) model.nextEventId |> Maybe.withDefault 8
+    in
     column
         [ width fill
-        , Background.color <| Theme.darken 4 <| RoleCard.colorOf role.level
+        , Background.color <| Theme.darken darkenPower <| RoleCard.colorOf model.card.level
         ]
-        (List.map displayBehaviour role.behaviours)
+        (List.map (displayBehaviour model.nextEventId) model.card.behaviours)
 
 
-displayBehaviour : Behaviour -> Element Msg
-displayBehaviour behaviour =
+displayBehaviour : Maybe Uuid -> Behaviour -> Element Msg
+displayBehaviour uuid behaviour =
     Input.button
         [ Border.solid
         , Border.color Color.Dracula.gray
@@ -145,7 +161,7 @@ displayBehaviour behaviour =
         , width fill
         , padding 14
         ]
-        { onPress = Just GainXp
+        { onPress = Maybe.map GainXp uuid
         , label =
             row [ spacingXY 14 0 ]
                 [ paragraph [ width shrink ] [ text "+1" ]
