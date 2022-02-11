@@ -39,6 +39,7 @@ type alias Model =
     { player : Player
     , players : Dict PlayerId Player
     , profile : Core.Profiles.Profile
+    , processedPlayerEvents : List Uuid
     }
 
 
@@ -47,6 +48,7 @@ empty =
     { players = Dict.empty
     , player = Player.unknown
     , profile = Core.Profiles.Player
+    , processedPlayerEvents = []
     }
 
 
@@ -80,20 +82,7 @@ evolve model req event =
     case event of
         Js.Events.PlayerEvent playerEvent ->
             if playerEvent.playerId == model.player.identity.id then
-                let
-                    updated =
-                        Player.evolve playerEvent.data model.player
-
-                    redirectionCommand =
-                        if updated.completedRoles == model.player.completedRoles then
-                            Cmd.none
-
-                        else
-                            Request.replaceRoute Gen.Route.Team req
-                in
-                ( { model | player = updated }
-                , redirectionCommand
-                )
+                evolveCurrentPlayer playerEvent model req
 
             else
                 ( { model
@@ -109,6 +98,31 @@ evolve model req event =
             ( { model | player = Player.reset model.player, players = Dict.empty }
             , Cmd.none
             )
+
+
+evolveCurrentPlayer : Core.Player.Event.Event -> Model -> Request -> ( Model, Cmd Msg )
+evolveCurrentPlayer playerEvent model req =
+    if List.member playerEvent.id model.processedPlayerEvents then
+        ( model, Cmd.none )
+
+    else
+        let
+            updated =
+                Player.evolve playerEvent.data model.player
+
+            redirectionCommand =
+                if updated.completedRoles == model.player.completedRoles then
+                    Cmd.none
+
+                else
+                    Request.replaceRoute Gen.Route.Team req
+        in
+        ( { model
+            | player = updated
+            , processedPlayerEvents = playerEvent.id :: model.processedPlayerEvents
+          }
+        , redirectionCommand
+        )
 
 
 
@@ -136,19 +150,16 @@ init _ flags =
     in
     case savedPlayer of
         Nothing ->
-            ( { players = Dict.empty
-              , player = Player.unknown
-              , profile = Core.Profiles.fromAdminBool flags.admin
-              }
+            ( { empty | profile = Core.Profiles.fromAdminBool flags.admin }
             , ( uuidGenerator, Player.generator )
                 |> (\( a, b ) -> Random.map2 Tuple.pair a b)
                 |> Random.generate CreatedPlayer
             )
 
         Just playerIdentity ->
-            ( { players = Dict.empty
-              , player = Player.fromIdentity playerIdentity
-              , profile = Core.Profiles.fromAdminBool flags.admin
+            ( { empty
+                | player = Player.fromIdentity playerIdentity
+                , profile = Core.Profiles.fromAdminBool flags.admin
               }
             , uuidGenerator
                 |> Random.map (\a -> ( a, Player.fromIdentity playerIdentity ))
@@ -164,9 +175,10 @@ update : Request -> Msg -> Model -> ( Model, Cmd Msg )
 update req msg model =
     case msg of
         PlayerEvent event ->
-            ( model
-            , Js.Events.publish <| Js.Events.PlayerEvent event
-            )
+            evolveCurrentPlayer event model req
+                |> Tuple.mapSecond List.singleton
+                |> Tuple.mapSecond ((::) << Js.Events.publish <| Js.Events.PlayerEvent event)
+                |> Tuple.mapSecond Cmd.batch
 
         CreatedPlayer ( uuid, player ) ->
             ( { model | player = player }
