@@ -36,7 +36,7 @@
       clearInterval(reconnectionInterval);
     });
     socket.on("disconnect", () => {
-      reconnectionInterval = setInterval(() => io.connect(), 1000)
+      reconnectionInterval = setInterval(() => io.connect(), 200)
     });
 
     // -----------------------------
