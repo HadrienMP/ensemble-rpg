@@ -29,6 +29,7 @@
 
     var socket = io();
     app.ports.ready.subscribe(() => {
+      console.log('joining room');
       socket.emit('join', 'the-only-room');
     });
     let reconnectionInterval;
@@ -43,6 +44,7 @@
     // Communication with peers
     // -----------------------------
     app.ports.publishEvent.subscribe(event => {
+      console.log('send', event)
       socket.emit('message', 'the-only-room', event);
     });
     socket.on('message', data => {
