@@ -91,8 +91,13 @@ evolve model req event =
                 else
                     ( { model
                         | players =
-                            Dict.update playerEvent.playerId
-                                (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent.data |> Just)
+                            Dict.update (Debug.log "event for " playerEvent.playerId)
+                                (\maybePlayer ->
+                                    maybePlayer
+                                        |> Maybe.withDefault Player.unknown
+                                        |> Player.evolve playerEvent.data
+                                        |> Just
+                                )
                                 model.players
                       }
                     , Cmd.none
@@ -141,7 +146,7 @@ type Msg
     | CreatedPlayer ( Uuid, Player )
     | GotEvent (Result Json.Error Js.Events.Super)
     | GotHistory (Result Json.Error (List Js.Events.Super))
-    | SelectRoom Room
+    | SelectRoom Uuid Room
     | QuitRoom
 
 
@@ -235,11 +240,18 @@ update req msg model =
             , Cmd.none
             )
 
-        SelectRoom room ->
+        SelectRoom uuid room ->
             ( { model | room = Just room }
             , Cmd.batch
                 [ Request.pushRoute Gen.Route.Home_ req
                 , Js.Events.join { room = Core.Room.print room }
+                , Js.Events.publish
+                    { room = room
+                    , content =
+                        ChangedIdentity model.player.identity
+                            |> toEvent uuid model.player.identity.id
+                            |> Js.Events.PlayerEvent
+                    }
                 ]
             )
 

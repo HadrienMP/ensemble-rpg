@@ -14,9 +14,11 @@ import Gen.Params.Entry exposing (Params)
 import Gen.Route
 import Json.Decode
 import Page
+import Random
 import Request
 import Shared
 import UI.Theme
+import Uuid
 import View exposing (View)
 
 
@@ -35,12 +37,12 @@ page shared req =
 
 
 type alias Model =
-    { name : String }
+    { name : String, uuid : Maybe Uuid.Uuid }
 
 
 init : ( Model, Effect Msg )
 init =
-    ( { name = "" }, Effect.none )
+    ( { name = "", uuid = Nothing }, Effect.fromCmd <| Random.generate GotUuid Uuid.uuidGenerator )
 
 
 
@@ -51,19 +53,28 @@ type Msg
     = SelectedRoom
     | Ignore
     | NameChanged String
+    | GotUuid Uuid.Uuid
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         SelectedRoom ->
-            ( model, Effect.fromShared (Shared.SelectRoom <| Core.Room.fromString model.name) )
+            case model.uuid of
+                Just uuid ->
+                    ( model, Effect.fromShared (Shared.SelectRoom uuid <| Core.Room.fromString model.name) )
+
+                Nothing ->
+                    ( model, Effect.none )
 
         NameChanged name ->
             ( { model | name = name }, Effect.none )
 
         Ignore ->
             ( model, Effect.none )
+
+        GotUuid uuid ->
+            ( { model | uuid = Just uuid }, Effect.none )
 
 
 

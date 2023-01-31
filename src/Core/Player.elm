@@ -78,7 +78,7 @@ evolve : Core.Player.Event.EventData -> Player -> Player
 evolve data player =
     case data of
         ChangedIdentity identity ->
-            { player | identity = identity }
+            { player | identity = Debug.log "changed identity" identity }
 
         DisplayedBehaviour role ->
             let
