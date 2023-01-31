@@ -16,7 +16,7 @@ import View exposing (View)
 
 page : Shared.Model -> Request -> Page
 page shared _ =
-    Page.static { view = view shared }
+    Page.protected.static <| \_ -> { view = view shared }
 
 
 
@@ -30,9 +30,9 @@ view model =
         container { profile = model.profile, currentRoute = Just Gen.Route.Team } [] <|
             column [ spacingXY 0 10 ]
                 ((h2 [] <|
-                    row [spacingXY 10 0]
+                    row [ spacingXY 10 0 ]
                         [ text "Team Score:"
-                        , el [Font.bold] <| text <| (String.fromInt <| Shared.score model) ++ " badges"
+                        , el [ Font.bold ] <| text <| (String.fromInt <| Shared.score model) ++ " badges"
                         ]
                  )
                     :: (Shared.allPlayers model |> List.map displayPlayer)

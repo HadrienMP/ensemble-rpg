@@ -24,12 +24,13 @@ import View exposing (View)
 
 page : Shared.Model -> Request -> Page.With Model Msg
 page shared _ =
-    Page.advanced
-        { init = init shared
-        , update = update shared
-        , view = view shared
-        , subscriptions = subscriptions
-        }
+    Page.protected.advanced <|
+        \_ ->
+            { init = init shared
+            , update = update shared
+            , view = view shared
+            , subscriptions = subscriptions
+            }
 
 
 

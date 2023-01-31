@@ -3,13 +3,15 @@ port module Js.Events exposing (..)
 import Core.Player.Event
 import Core.Player.Id exposing (..)
 import Core.Role exposing (Role(..))
+import Core.Room exposing (Room)
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode
 import Test.Html.Event exposing (Event)
 
 
-port ready : () -> Cmd msg
+
+port join : { room : String } -> Cmd msg
 
 
 port publishEvent : Json.Encode.Value -> Cmd msg
@@ -21,19 +23,23 @@ port receiveOne : (Json.Encode.Value -> msg) -> Sub msg
 port receiveHistory : (Json.Encode.Value -> msg) -> Sub msg
 
 
-listenToOne : (Result Decode.Error Event -> msg) -> Sub msg
+listenToOne : (Result Decode.Error Super -> msg) -> Sub msg
 listenToOne msgF =
-    receiveOne (\value -> Decode.decodeValue eventDecoder value |> msgF)
+    receiveOne (\value -> Decode.decodeValue superDecode value |> msgF)
 
 
-listenToHistory : (Result Decode.Error (List Event) -> msg) -> Sub msg
+listenToHistory : (Result Decode.Error (List Super) -> msg) -> Sub msg
 listenToHistory msgF =
-    receiveHistory (\value -> Decode.decodeValue (Decode.list eventDecoder) value |> msgF)
+    receiveHistory (\value -> Decode.decodeValue (Decode.list superDecode) value |> msgF)
 
 
-publish : Event -> Cmd msg
+publish : Super -> Cmd msg
 publish event =
     encode event |> publishEvent
+
+
+type alias Super =
+    { room : Room, content : Event }
 
 
 type Event
@@ -51,11 +57,16 @@ eventType event =
             "Reset"
 
 
-encode : Event -> Json.Encode.Value
+encode : Super -> Json.Encode.Value
 encode event =
     Json.Encode.object
-        [ ( "type", Json.Encode.string <| eventType event )
-        , ( "data", encodeEventData event )
+        [ ( "room", Json.Encode.string <| Core.Room.print event.room )
+        , ( "content"
+          , Json.Encode.object
+                [ ( "type", Json.Encode.string <| eventType event.content )
+                , ( "data", encodeEventData event.content )
+                ]
+          )
         ]
 
 
@@ -67,6 +78,13 @@ encodeEventData event =
 
         Reset ->
             Json.Encode.null
+
+
+superDecode : Decode.Decoder Super
+superDecode =
+    Decode.succeed Super
+        |> required "room" (Decode.string |> Decode.map Core.Room.fromString)
+        |> required "content" eventDecoder
 
 
 eventDecoder : Decode.Decoder Event

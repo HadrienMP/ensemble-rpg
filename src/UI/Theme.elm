@@ -32,8 +32,6 @@ container context attr children =
     el
         ([ inFront <| navigation context
          , behindContent header
-         , Font.color Color.Dracula.white
-         , Font.size 14
          , width fill
          , paddingEach { top = 44, left = 0, right = 0, bottom = 60 }
          ]

@@ -15,6 +15,7 @@ import Core.Player as Player exposing (Player)
 import Core.Player.Event exposing (EventData(..), toEvent)
 import Core.Player.Id exposing (PlayerId)
 import Core.Profiles
+import Core.Room exposing (Room)
 import Gen.Route
 import Js.Events
 import Js.Storage
@@ -36,7 +37,8 @@ type alias Flags =
 
 
 type alias Model =
-    { player : Player
+    { room : Maybe Room
+    , player : Player
     , players : Dict PlayerId Player
     , profile : Core.Profiles.Profile
     , processedPlayerEvents : List Uuid
@@ -45,7 +47,8 @@ type alias Model =
 
 empty : Model
 empty =
-    { players = Dict.empty
+    { room = Nothing
+    , players = Dict.empty
     , player = Player.unknown
     , profile = Core.Profiles.Player
     , processedPlayerEvents = []
@@ -65,7 +68,7 @@ allPlayers model =
     model.player :: Dict.values model.players
 
 
-evolveMany : List Js.Events.Event -> Request -> Model -> Model
+evolveMany : List Js.Events.Super -> Request -> Model -> Model
 evolveMany events req model =
     case events of
         [] ->
@@ -77,27 +80,31 @@ evolveMany events req model =
                 |> evolveMany tail req
 
 
-evolve : Model -> Request -> Js.Events.Event -> ( Model, Cmd Msg )
+evolve : Model -> Request -> Js.Events.Super -> ( Model, Cmd Msg )
 evolve model req event =
-    case event of
-        Js.Events.PlayerEvent playerEvent ->
-            if playerEvent.playerId == model.player.identity.id then
-                evolveCurrentPlayer playerEvent model req
+    if model.room == Just event.room then
+        case event.content of
+            Js.Events.PlayerEvent playerEvent ->
+                if playerEvent.playerId == model.player.identity.id then
+                    evolveCurrentPlayer playerEvent model req
 
-            else
-                ( { model
-                    | players =
-                        Dict.update playerEvent.playerId
-                            (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent.data |> Just)
-                            model.players
-                  }
+                else
+                    ( { model
+                        | players =
+                            Dict.update playerEvent.playerId
+                                (\a -> Maybe.withDefault Player.unknown a |> Player.evolve playerEvent.data |> Just)
+                                model.players
+                      }
+                    , Cmd.none
+                    )
+
+            Js.Events.Reset ->
+                ( { model | player = Player.reset model.player, players = Dict.empty }
                 , Cmd.none
                 )
 
-        Js.Events.Reset ->
-            ( { model | player = Player.reset model.player, players = Dict.empty }
-            , Cmd.none
-            )
+    else
+        ( model, Cmd.none )
 
 
 evolveCurrentPlayer : Core.Player.Event.Event -> Model -> Request -> ( Model, Cmd Msg )
@@ -132,8 +139,10 @@ evolveCurrentPlayer playerEvent model req =
 type Msg
     = PlayerEvent Core.Player.Event.Event
     | CreatedPlayer ( Uuid, Player )
-    | GotEvent (Result Json.Error Js.Events.Event)
-    | GotHistory (Result Json.Error (List Js.Events.Event))
+    | GotEvent (Result Json.Error Js.Events.Super)
+    | GotHistory (Result Json.Error (List Js.Events.Super))
+    | SelectRoom Room
+    | QuitRoom
 
 
 
@@ -175,22 +184,44 @@ update : Request -> Msg -> Model -> ( Model, Cmd Msg )
 update req msg model =
     case msg of
         PlayerEvent event ->
-            evolveCurrentPlayer event model req
-                |> Tuple.mapSecond List.singleton
-                |> Tuple.mapSecond ((::) << Js.Events.publish <| Js.Events.PlayerEvent event)
-                |> Tuple.mapSecond Cmd.batch
+            case model.room of
+                Just room ->
+                    evolveCurrentPlayer event model req
+                        |> Tuple.mapSecond List.singleton
+                        |> Tuple.mapSecond
+                            ((::) <|
+                                Js.Events.publish
+                                    { room = room
+                                    , content = Js.Events.PlayerEvent event
+                                    }
+                            )
+                        |> Tuple.mapSecond Cmd.batch
+
+                Nothing ->
+                    evolveCurrentPlayer event model req
 
         CreatedPlayer ( uuid, player ) ->
-            ( { model | player = player }
-            , Cmd.batch
-                [ Js.Storage.saveIdentity player.identity
-                , ChangedIdentity player.identity
-                    |> toEvent uuid player.identity.id
-                    |> Js.Events.PlayerEvent
-                    |> Js.Events.publish
-                , Js.Events.ready ()
-                ]
-            )
+            case model.room of
+                Just room ->
+                    ( { model | player = player }
+                    , Cmd.batch
+                        [ Js.Storage.saveIdentity player.identity
+                        , Js.Events.publish
+                            { room = room
+                            , content =
+                                ChangedIdentity player.identity
+                                    |> toEvent uuid player.identity.id
+                                    |> Js.Events.PlayerEvent
+                            }
+                        ]
+                    )
+
+                Nothing ->
+                    ( { model | player = player }
+                    , Cmd.batch
+                        [ Js.Storage.saveIdentity player.identity
+                        ]
+                    )
 
         GotEvent result ->
             result
@@ -203,6 +234,17 @@ update req msg model =
                 |> Result.withDefault model
             , Cmd.none
             )
+
+        SelectRoom room ->
+            ( { model | room = Just room }
+            , Cmd.batch
+                [ Request.pushRoute Gen.Route.Home_ req
+                , Js.Events.join { room = Core.Room.print room }
+                ]
+            )
+
+        QuitRoom ->
+            ( { model | room = Nothing }, Cmd.none )
 
 
 subscriptions : Request -> Model -> Sub Msg

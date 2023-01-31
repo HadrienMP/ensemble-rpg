@@ -6,6 +6,7 @@ import Core.Profiles
 import Element exposing (..)
 import Element.Background as Background
 import UI.Theme
+import Element.Font
 
 
 type alias View msg =
@@ -37,6 +38,11 @@ toBrowserDocument : View msg -> Browser.Document msg
 toBrowserDocument view =
     { title = view.title ++ " | Ensemble RPG"
     , body =
-        [ layout [ Background.color Color.Dracula.black ] view.body
+        [ layout
+            [ Background.color Color.Dracula.black
+            , Element.Font.color Color.Dracula.white
+            , Element.Font.size 14
+            ]
+            view.body
         ]
     }

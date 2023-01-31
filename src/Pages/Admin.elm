@@ -1,6 +1,7 @@
 module Pages.Admin exposing (Model, Msg, page)
 
 import Color.Dracula
+import Core.Room exposing (Room)
 import Element exposing (centerX, column, el, fill, padding, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
@@ -19,12 +20,13 @@ import View exposing (View)
 
 page : Shared.Model -> Request.With Params -> Page.With Model Msg
 page shared _ =
-    Page.element
-        { init = init
-        , update = update shared
-        , view = view shared
-        , subscriptions = subscriptions
-        }
+    Page.protected.element <|
+        \room ->
+            { init = init
+            , update = update room
+            , view = view shared
+            , subscriptions = subscriptions
+            }
 
 
 
@@ -49,14 +51,14 @@ type Msg
     | ResetConfirmed
 
 
-update : Shared.Model -> Msg -> Model -> ( Model, Cmd Msg )
-update _ msg model =
+update : Room -> Msg -> Model -> ( Model, Cmd Msg )
+update room msg model =
     case msg of
         ResetRequested ->
             ( { model | resetRequested = True }, Cmd.none )
 
         ResetConfirmed ->
-            ( { model | resetRequested = False }, Js.Events.publish <| Js.Events.Reset )
+            ( { model | resetRequested = False }, Js.Events.publish { room = room, content = Js.Events.Reset } )
 
 
 

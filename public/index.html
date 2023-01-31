@@ -28,9 +28,9 @@
     });
 
     var socket = io();
-    app.ports.ready.subscribe(() => {
+    app.ports.join.subscribe(({room}) => {
       console.log('joining room');
-      socket.emit('join', 'the-only-room');
+      socket.emit('join', room);
     });
     let reconnectionInterval;
     socket.on("connect", () => {
@@ -45,7 +45,7 @@
     // -----------------------------
     app.ports.publishEvent.subscribe(event => {
       console.log('send', event)
-      socket.emit('message', 'the-only-room', event);
+      socket.emit('message', event.room, event);
     });
     socket.on('message', data => {
       console.log('message in', data);

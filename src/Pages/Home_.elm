@@ -1,6 +1,7 @@
 module Pages.Home_ exposing (page)
 
 import Color.Dracula
+import Core.AccessibleRoles
 import Core.Player as Player
 import Core.RoleCard as RoleCard exposing (DisplayMode(..), RoleCard)
 import Core.XpProgress exposing (XpProgress)
@@ -14,14 +15,14 @@ import Request exposing (Request)
 import Shared
 import UI.Theme exposing (darken)
 import View exposing (View)
-import Core.AccessibleRoles
 
 
 page : Shared.Model -> Request -> Page
 page shared _ =
-    Page.static
-        { view = view shared
-        }
+    Page.protected.static <|
+        \_ ->
+            { view = view shared
+            }
 
 
 view : Shared.Model -> View msg
